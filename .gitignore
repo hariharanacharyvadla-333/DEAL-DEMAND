@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+*/node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production builds
+dist/
+build/
+client/dist/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.env.local
+server/.env
+
+# Local Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+server/prisma/dev.db*
+dev.db*
+
+# User uploads & temporary files
+server/uploads/*
+!server/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,389 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  phone           String?        @unique
+  passwordHash    String
+  name            String
+  role            String         @default("CUSTOMER") // "CUSTOMER", "WORKER", "ADMIN"
+  avatarUrl       String?
+  city            String?
+  isBlocked       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  workerProfile   WorkerProfile?
+  requirements    Requirement[]  @relation("CustomerRequirements")
+  customerOrders  Order[]        @relation("CustomerOrders")
+  reviewsGiven    Review[]       @relation("ReviewsGiven")
+  sentMessages    Message[]      @relation("SentMessages")
+  notifications   Notification[]
+  disputesFiled   Dispute[]      @relation("DisputesFiled")
+  supportTickets  SupportTicket[]
+  auditLogs       AuditLog[]
+}
+
+model WorkerProfile {
+  id                String             @id @default(uuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tagline           String?
+  bio               String?
+  yearsExperience   Int                @default(1)
+  serviceArea       String             @default("Bengaluru")
+  address           String?
+  lat               Float?
+  lng               Float?
+  verificationState String             @default("PENDING") // "UNVERIFIED", "PENDING", "VERIFIED", "REJECTED"
+  badgeLevel        String             @default("BASIC")   // "NONE", "BASIC", "VERIFIED", "PREMIUM"
+  rating            Float              @default(5.0)
+  totalReviews      Int                @default(0)
+  jobsCompleted     Int                @default(0)
+  responseRatePct   Int                @default(95)
+  profileCompletePct Int               @default(80)
+  walletBalance     Float              @default(0.0)
+  pendingEscrow     Float              @default(0.0)
+  bankUpiDetails    String?            // JSON string: { "upiId": "...", "account": "...", "ifsc": "..." }
+  skills            String?            // comma-separated
+  categories        WorkerCategory[]
+  portfolioItems    PortfolioItem[]
+  kycDocuments      KYCDocument[]
+  quotations        Quotation[]
+  workerOrders      Order[]            @relation("WorkerOrders")
+  reviewsReceived   Review[]           @relation("ReviewsReceived")
+  payouts           Payout[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Category {
+  id              String            @id @default(uuid())
+  slug            String            @unique
+  name            String
+  description     String?
+  iconName        String
+  commissionPct   Float             @default(5.0)
+  fields          CategoryField[]
+  workers         WorkerCategory[]
+  requirements    Requirement[]
+  createdAt       DateTime          @default(now())
+}
+
+model CategoryField {
+  id           String    @id @default(uuid())
+  categoryId   String
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  fieldName    String    // e.g. "itemType", "material", "dimensions"
+  label        String
+  fieldType    String    // "text", "number", "dropdown", "multiselect", "toggle"
+  options      String?   // JSON array string for options
+  isRequired   Boolean   @default(false)
+  placeholder  String?
+  sortOrder    Int       @default(0)
+}
+
+model WorkerCategory {
+  id         String        @id @default(uuid())
+  workerId   String
+  worker     WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, categoryId])
+}
+
+model PortfolioItem {
+  id             String        @id @default(uuid())
+  workerId       String
+  worker         WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  imageUrl       String
+  beforeImageUrl String?
+  category       String?
+  createdAt      DateTime      @default(now())
+}
+
+model KYCDocument {
+  id           String        @id @default(uuid())
+  workerId     String
+  worker       WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  docType      String        // "AADHAAR", "PAN", "TRADE_LICENSE", "CERTIFICATE"
+  docNumber    String?
+  fileUrl      String
+  status       String        @default("PENDING") // "PENDING", "VERIFIED", "REJECTED"
+  adminNote    String?
+  createdAt    DateTime      @default(now())
+  reviewedAt   DateTime?
+}
+
+model Requirement {
+  id                String             @id @default(uuid())
+  customerId        String
+  customer          User               @relation("CustomerRequirements", fields: [customerId], references: [id])
+  categoryId        String
+  category          Category           @relation(fields: [categoryId], references: [id])
+  title             String
+  description       String
+  dynamicValues     String             @default("{}") // JSON string
+  minBudget         Float
+  maxBudget         Float
+  isNegotiable      Boolean            @default(true)
+  city              String
+  address           String
+  lat               Float?
+  lng               Float?
+  deadline          DateTime
+  urgency           String             @default("NORMAL") // "NORMAL", "URGENT"
+  workLocationType  String             @default("ON_SITE") // "ON_SITE", "DELIVERY"
+  materialsSupplied Boolean            @default(false)
+  installationReq   Boolean            @default(true)
+  siteVisitReq      Boolean            @default(false)
+  status            String             @default("OPEN") // "OPEN", "QUOTATIONS_RECEIVED", "WORKER_SELECTED", "IN_PROGRESS", "DELIVERED", "COMPLETED", "CANCELLED", "DISPUTED"
+  aiSpecs           String?            // JSON string with AI enhancements
+  fraudRiskScore    Float              @default(0.0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  images            RequirementImage[]
+  quotations        Quotation[]
+  orders            Order[]
+  chats             Chat[]
+}
+
+model RequirementImage {
+  id            String      @id @default(uuid())
+  requirementId String
+  requirement   Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  fileUrl       String
+  fileType      String      @default("IMAGE") // "IMAGE", "PDF", "AUDIO"
+  createdAt     DateTime    @default(now())
+}
+
+model Quotation {
+  id             String          @id @default(uuid())
+  requirementId  String
+  requirement    Requirement     @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  workerId       String
+  worker         WorkerProfile   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  totalPrice     Float
+  timelineDays   Int
+  warrantyMonths Int             @default(0)
+  deliveryTerms  String?
+  notes          String?
+  status         String          @default("PENDING") // "PENDING", "SHORTLISTED", "NEGOTIATING", "ACCEPTED", "REJECTED", "EXPIRED", "WITHDRAWN"
+  counterPrice   Float?
+  validUntil     DateTime?
+  aiValueScore   Float?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  items          QuotationItem[]
+  orders         Order[]
+}
+
+model QuotationItem {
+  id          String    @id @default(uuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  title       String
+  category    String    // "MATERIAL", "LABOUR", "TRANSPORT", "TAX"
+  amount      Float
+}
+
+model Order {
+  id               String       @id @default(uuid())
+  orderNumber      String       @unique
+  requirementId    String
+  requirement      Requirement  @relation(fields: [requirementId], references: [id])
+  quotationId      String
+  quotation        Quotation    @relation(fields: [quotationId], references: [id])
+  customerId       String
+  customer         User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  workerId         String
+  worker           WorkerProfile@relation("WorkerOrders", fields: [workerId], references: [id])
+  totalAmount      Float
+  commissionRate   Float        @default(5.0)
+  commissionAmount Float
+  workerNetPay     Float
+  status           String       @default("CREATED") // "CREATED", "ACCEPTED", "IN_PROGRESS", "READY_FOR_DELIVERY", "DELIVERED", "COMPLETED", "DISPUTED", "CANCELLED"
+  deliveryAddress  String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  milestones       Milestone[]
+  payments         Payment[]
+  escrow           EscrowTransaction?
+  delivery         Delivery?
+  review           Review?
+  disputes         Dispute[]
+}
+
+model Milestone {
+  id          String          @id @default(uuid())
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  amount      Float
+  sortOrder   Int             @default(0)
+  status      String          @default("PENDING") // "PENDING", "IN_PROGRESS", "WORKER_COMPLETED", "CUSTOMER_APPROVED", "PAYMENT_RELEASED"
+  photoUrl    String?
+  completedAt DateTime?
+}
+
+model EscrowTransaction {
+  id          String       @id @default(uuid())
+  orderId     String       @unique
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amountHeld  Float
+  status      String       @default("HELD") // "HELD", "RELEASED_TO_WORKER", "REFUNDED_TO_CUSTOMER", "SPLIT_RESOLVED"
+  heldAt      DateTime     @default(now())
+  releasedAt  DateTime?
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentType   String   // "DEPOSIT", "MILESTONE", "FINAL"
+  amount        Float
+  status        String   @default("SUCCESS")
+  method        String   @default("UPI")
+  invoiceNumber String   @unique
+  createdAt     DateTime @default(now())
+}
+
+model Payout {
+  id          String        @id @default(uuid())
+  workerId    String
+  worker      WorkerProfile @relation(fields: [workerId], references: [id])
+  amount      Float
+  status      String        @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  adminNote   String?
+  processedAt DateTime?
+  createdAt   DateTime      @default(now())
+}
+
+model Delivery {
+  id            String    @id @default(uuid())
+  orderId       String    @unique
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status        String    @default("IN_TRANSIT") // "PENDING", "IN_TRANSIT", "DELIVERED", "FAILED"
+  trackingId    String?
+  deliveryProof String?
+  deliveredAt   DateTime?
+  updatedAt     DateTime  @updatedAt
+}
+
+model Chat {
+  id            String       @id @default(uuid())
+  requirementId String?
+  requirement   Requirement? @relation(fields: [requirementId], references: [id])
+  customerId    String
+  workerId      String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  messages      Message[]
+  @@unique([customerId, workerId, requirementId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  chatId         String
+  chat           Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation("SentMessages", fields: [senderId], references: [id])
+  text           String
+  translatedText String?
+  fileUrl        String?
+  isMasked       Boolean  @default(true)
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model Review {
+  id            String        @id @default(uuid())
+  orderId       String        @unique
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      User          @relation("ReviewsGiven", fields: [customerId], references: [id])
+  workerId      String
+  worker        WorkerProfile @relation("ReviewsReceived", fields: [workerId], references: [id])
+  ratingQuality Int           @default(5)
+  ratingComm    Int           @default(5)
+  ratingTime    Int           @default(5)
+  ratingValue   Int           @default(5)
+  overallRating Float         @default(5.0)
+  comment       String
+  photoUrl      String?
+  workerReply   String?
+  createdAt     DateTime      @default(now())
+  editableUntil DateTime
+}
+
+model Dispute {
+  id           String        @id @default(uuid())
+  orderId      String
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  raisedById   String
+  raisedBy     User          @relation("DisputesFiled", fields: [raisedById], references: [id])
+  reason       String
+  evidenceUrl  String?
+  status       String        @default("OPEN") // "OPEN", "UNDER_REVIEW", "RESOLVED_REFUND", "RESOLVED_RELEASE", "RESOLVED_SPLIT"
+  decision     String?
+  refundAmount Float?
+  workerAmount Float?
+  createdAt    DateTime      @default(now())
+  resolvedAt   DateTime?
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // "DEAL_UPDATE", "NEW_QUOTATION", "PAYMENT", "ADMIN_ALERT"
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  discountPct Float
+  maxDiscount Float
+  validUntil  DateTime
+  isActive    Boolean   @default(true)
+}
+
+model SupportTicket {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  status    String   @default("OPEN") // "OPEN", "RESOLVED"
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  targetId  String?
+  details   String?
+  createdAt DateTime @default(now())
+}
