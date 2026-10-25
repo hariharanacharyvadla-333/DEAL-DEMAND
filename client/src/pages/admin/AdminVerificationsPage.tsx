@@ -97,6 +97,14 @@ export const AdminVerificationsPage: React.FC = () => {
           <Skeleton className="h-44" />
           <Skeleton className="h-44" />
         </div>
+      ) : queue.length === 0 ? (
+        <Card className="p-12 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+          <ShieldCheck className="w-12 h-12 text-[#10B981] mb-3" />
+          <h3 className="text-lg font-bold text-[#0A0A0A] mb-1">No workers to verify</h3>
+          <p className="text-sm text-[#4A4A4A] max-w-md mx-auto leading-relaxed font-normal">
+            All registered artisan KYC applications have been reviewed. When new workers complete registration and upload identity proofs, they will appear in this queue.
+          </p>
+        </Card>
       ) : (
         <div className="space-y-4">
           {queue.map((w) => {
@@ -196,6 +204,26 @@ export const AdminVerificationsPage: React.FC = () => {
               <span className="text-black">{selectedWorker?.skills}</span>
             </div>
           </div>
+
+          {selectedWorker?.kycDocuments && selectedWorker.kycDocuments.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="block text-xs font-mono uppercase text-[#4A4A4A]">
+                Uploaded ID & Certification Proofs:
+              </label>
+              <div className="space-y-1.5">
+                {selectedWorker.kycDocuments.map((doc: any) => (
+                  <div key={doc.id} className="flex items-center justify-between p-2.5 border border-[#D9D9D9] rounded-nothing-sm text-xs bg-[#FAFAFA]">
+                    <span className="font-mono text-[#0A0A0A] font-medium">{doc.docType}: {doc.docNumber || 'Proof File'}</span>
+                    {doc.docUrl && (
+                      <a href={doc.docUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1">
+                        View Document <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-mono uppercase text-neutral-600 mb-1">

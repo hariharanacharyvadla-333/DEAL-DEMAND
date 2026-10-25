@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -15,50 +15,44 @@ import {
 } from 'lucide-react';
 
 export const AdminDisputesPage: React.FC = () => {
-  const [disputes, setDisputes] = useState<any[]>([
-    {
-      id: 'DISP-2026-01',
-      orderNumber: 'ORD-2026-9921',
-      clientName: 'Divya Iyer (Chennai)',
-      artisanName: 'Deepak Verma (Mumbai)',
-      projectTitle: 'Terrace Waterproofing with Fiber Mesh Membrane',
-      totalAmount: 48000,
-      reason: 'Seepage re-occurred in master bedroom ceiling after first rain. Membrane peeling at parapet edges.',
-      workerDefense: 'Client walked on wet polymer slurry during curing stage despite warnings. Parapet joints need re-grouting.',
-      evidencePhoto: 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600',
-      chatSnippet: "Customer: 'The ceiling is dripping again!' • Worker: 'Madam, the chemical needed 48h drying time.'",
-      status: 'OPEN',
-      date: '2026-10-09',
-    },
-    {
-      id: 'DISP-2026-02',
-      orderNumber: 'ORD-2026-8814',
-      clientName: 'Vikram Patel (Ahmedabad)',
-      artisanName: 'Girish Naidu (Hyderabad)',
-      projectTitle: 'Custom Teak Wood Temple Mandir Carving',
-      totalAmount: 36000,
-      reason: 'Pooja mandir brass bells were missing from delivery carton and polish tone is darker walnut rather than honey teak.',
-      workerDefense: 'Brass bells were dispatched separately via BlueDart tracking #BD9912. Melamine polish lightens after 14 days of UV cure.',
-      evidencePhoto: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600',
-      chatSnippet: "Customer: 'Bells are missing and finish is too dark.' • Worker: 'Bells couriered today morning; tracking sent.'",
-      status: 'OPEN',
-      date: '2026-10-08',
-    },
-    {
-      id: 'DISP-2026-03',
-      orderNumber: 'ORD-2026-7740',
-      clientName: 'Kunal Deshmukh (Mumbai)',
-      artisanName: 'Suresh Babu (Bengaluru)',
-      projectTitle: 'Laser-Cut MS Safety Compound Gate (14ft x 6ft)',
-      totalAmount: 28000,
-      reason: 'Gate hinges bind when swinging open past 90 degrees due to uneven pillar alignment.',
-      workerDefense: 'Existing civil pillar is out of plumb by 1.5 inches. We can fit an offset spacer bracket to allow 120-degree swing.',
-      evidencePhoto: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600',
-      chatSnippet: "Customer: 'Gate catches the boundary pillar.' • Worker: 'Pillar plumb line is off; I can install an offset hinge bracket tomorrow.'",
-      status: 'OPEN',
-      date: '2026-10-07',
-    },
-  ]);
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDisputes = async () => {
+      try {
+        const token = localStorage.getItem('dd_token');
+        const res = await fetch('/api/admin/disputes', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setDisputes(
+            (data.disputes || []).map((d: any) => ({
+              id: d.id,
+              orderNumber: d.order?.orderNumber || 'ORD-000',
+              clientName: d.order?.customer?.name || 'Customer',
+              artisanName: d.order?.worker?.user?.name || 'Artisan',
+              projectTitle: d.order?.requirement?.title || 'Contract Work',
+              totalAmount: d.order?.escrow?.amountHeld || d.order?.agreedPrice || 0,
+              reason: d.reason || 'Escrow dispute raised',
+              workerDefense: d.resolution || 'Awaiting artisan defense statement',
+              evidencePhoto: d.evidenceUrls?.[0] || 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600',
+              chatSnippet: 'Formal dispute filed for admin mediation.',
+              status: d.status || 'OPEN',
+              date: new Date(d.createdAt).toLocaleDateString(),
+            }))
+          );
+        }
+      } catch (err) {
+        console.error('Failed to load disputes:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDisputes();
+  }, []);
 
   // Resolution Modal
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
@@ -93,13 +87,22 @@ export const AdminDisputesPage: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {disputes.map((d) => (
-          <Card
-            key={d.id}
-            className={`p-6 bg-white border ${
-              d.status.startsWith('RESOLVED') ? 'border-neutral-200' : 'border-[#E1251B]'
-            } shadow-sm rounded-nothing space-y-5`}
-          >
+        {disputes.length === 0 ? (
+          <Card className="p-12 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <Scale className="w-12 h-12 text-[#10B981] mb-3" />
+            <h3 className="text-lg font-bold text-[#0A0A0A] mb-1">No disputes filed yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto leading-relaxed font-normal">
+              All ongoing client and artisan contracts are progressing smoothly. When an escrow milestone dispute is raised, it will appear here for mediation and adjudication.
+            </p>
+          </Card>
+        ) : (
+          disputes.map((d) => (
+            <Card
+              key={d.id}
+              className={`p-6 bg-white border ${
+                d.status.startsWith('RESOLVED') ? 'border-neutral-200' : 'border-[#E1251B]'
+              } shadow-sm rounded-nothing space-y-5`}
+            >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#D9D9D9]">
               <div className="flex items-center gap-2.5">
                 <span className="font-mono text-xs font-bold bg-white text-[#0A0A0A] px-2.5 py-0.5 rounded border border-[#D9D9D9] shadow-2xs">
@@ -175,7 +178,8 @@ export const AdminDisputesPage: React.FC = () => {
               </div>
             </div>
           </Card>
-        ))}
+          ))
+        )}
       </div>
 
       {/* RULING MODAL */}

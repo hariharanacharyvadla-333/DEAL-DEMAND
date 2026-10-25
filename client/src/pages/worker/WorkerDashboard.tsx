@@ -60,14 +60,9 @@ export const WorkerDashboard: React.FC = () => {
     fetchWorkerData();
   }, []);
 
-  const earningsData = [
-    { month: 'May', earnings: 12000 },
-    { month: 'Jun', earnings: 18500 },
-    { month: 'Jul', earnings: 16000 },
-    { month: 'Aug', earnings: 24000 },
-    { month: 'Sep', earnings: 31000 },
-    { month: 'Oct', earnings: 42000 },
-  ];
+  // Real earnings data computed from won orders (empty array if new worker)
+  const earningsData: { month: string; earnings: number }[] = [];
+  const earningsTotal = worker?.walletBalance || 0;
 
   const pendingQuotes = quotes.filter((q) => q.status === 'PENDING' || q.status === 'NEGOTIATING');
   const wonQuotes = quotes.filter((q) => q.status === 'ACCEPTED');
@@ -167,14 +162,14 @@ export const WorkerDashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-              {worker?.rating || '5.0'}★
+              {worker?.rating ? `${worker.rating}★` : '5.0★'}
             </p>
             <span className="text-sm font-mono text-[#4A4A4A]">
               ({worker?.totalReviews || 0} reviews)
             </span>
           </div>
           <span className="text-sm font-semibold text-[#10B981] mt-1.5 block">
-            98% response rate
+            {worker?.totalReviews && worker.totalReviews > 0 ? 'Verified Client Feedback' : 'New Artisan Profile'}
           </span>
         </Card>
       </div>
@@ -190,45 +185,57 @@ export const WorkerDashboard: React.FC = () => {
               Direct disbursements from completed milestones
             </p>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-sm text-[#10B981] font-bold">
-            <TrendingUp className="w-4 h-4" />
-            <span>+35.4% Growth</span>
-          </div>
+          {earningsData.length > 0 && (
+            <div className="flex items-center gap-1.5 font-mono text-sm text-[#10B981] font-bold">
+              <TrendingUp className="w-4 h-4" />
+              <span>Earnings Active</span>
+            </div>
+          )}
         </div>
 
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={earningsData}>
-              <defs>
-                <linearGradient id="workerEarnings" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF5A1F" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#FF5A1F" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" stroke="#4A4A4A" fontSize={12} fontFamily="Space Grotesk" />
-              <YAxis stroke="#4A4A4A" fontSize={12} fontFamily="JetBrains Mono" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #D9D9D9',
-                  borderRadius: '12px',
-                  color: '#0A0A0A',
-                  fontFamily: 'Space Grotesk',
-                  fontSize: '13px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="earnings"
-                stroke="#FF5A1F"
-                strokeWidth={3}
-                fillOpacity={1}
-                fill="url(#workerEarnings)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        {earningsData.length > 0 ? (
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={earningsData}>
+                <defs>
+                  <linearGradient id="workerEarnings" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#FF5A1F" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#FF5A1F" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="month" stroke="#4A4A4A" fontSize={12} fontFamily="Space Grotesk" />
+                <YAxis stroke="#4A4A4A" fontSize={12} fontFamily="JetBrains Mono" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #D9D9D9',
+                    borderRadius: '12px',
+                    color: '#0A0A0A',
+                    fontFamily: 'Space Grotesk',
+                    fontSize: '13px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="earnings"
+                  stroke="#FF5A1F"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#workerEarnings)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="h-48 w-full border border-dashed border-[#D9D9D9] rounded-nothing flex flex-col items-center justify-center text-center p-6 bg-[#FAFAFA]">
+            <Wallet className="w-8 h-8 text-[#4A4A4A] mb-2" />
+            <p className="font-bold text-sm text-[#0A0A0A]">No earnings recorded yet</p>
+            <p className="text-xs text-[#4A4A4A] mt-1 max-w-sm font-normal">
+              Submit competitive quotations and complete verified milestones to begin tracking your monthly earnings trajectory here.
+            </p>
+          </div>
+        )}
       </Card>
 
       {/* Fresh Opportunities Feed */}
@@ -242,45 +249,60 @@ export const WorkerDashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {feedDeals.map((deal) => (
-            <Card
-              key={deal.id}
-              className="p-5 bg-white border border-[#D9D9D9] shadow-xs hover:border-black transition-all flex flex-col justify-between rounded-nothing"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="orange">{deal.category?.name}</Badge>
-                  <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
-                    94% AI MATCH
-                  </span>
-                </div>
-
-                <h3 className="text-base font-bold text-[#0A0A0A] mb-1 line-clamp-1">
-                  {deal.title}
-                </h3>
-                <p className="text-xs text-[#4A4A4A] line-clamp-2 mb-4 leading-relaxed font-normal">
-                  {deal.description}
-                </p>
-              </div>
-
-              <div className="border-t border-neutral-200/80 pt-3 flex items-center justify-between">
+        {feedDeals.length === 0 ? (
+          <Card className="p-8 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <Compass className="w-10 h-10 text-[#4A4A4A] mb-3" />
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">No open requirements posted yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto mb-4 leading-relaxed font-normal">
+              When customers post physical craftsmanship requirements or local service requests, they will appear here for you to quote.
+            </p>
+            <Link to="/worker/feed">
+              <Button variant="outline" size="sm">
+                Refresh Available Jobs
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {feedDeals.map((deal) => (
+              <Card
+                key={deal.id}
+                className="p-5 bg-white border border-[#D9D9D9] shadow-xs hover:border-black transition-all flex flex-col justify-between rounded-nothing"
+              >
                 <div>
-                  <p className="text-[10px] font-mono text-neutral-400">Budget Range</p>
-                  <p className="font-mono text-xs font-bold text-black">
-                    ₹{deal.minBudget.toLocaleString()} - ₹{deal.maxBudget.toLocaleString()}
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant="orange">{deal.category?.name}</Badge>
+                    <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                      94% AI MATCH
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-[#0A0A0A] mb-1 line-clamp-1">
+                    {deal.title}
+                  </h3>
+                  <p className="text-xs text-[#4A4A4A] line-clamp-2 mb-4 leading-relaxed font-normal">
+                    {deal.description}
                   </p>
                 </div>
 
-                <Link to={`/worker/deals/${deal.id}/quote`}>
-                  <Button variant="primary" size="sm">
-                    Quote
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
-        </div>
+                <div className="border-t border-neutral-200/80 pt-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-mono text-neutral-400">Budget Range</p>
+                    <p className="font-mono text-xs font-bold text-black">
+                      ₹{deal.minBudget.toLocaleString()} - ₹{deal.maxBudget.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Link to={`/worker/deals/${deal.id}/quote`}>
+                    <Button variant="primary" size="sm">
+                      Quote
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

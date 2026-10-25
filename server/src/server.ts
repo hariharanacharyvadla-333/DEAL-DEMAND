@@ -16,9 +16,11 @@ import chatRouter from './routes/chat.routes';
 import aiRouter from './routes/ai.routes';
 import categoryRouter from './routes/category.routes';
 import uploadRouter from './routes/upload.routes';
+import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
 
+const prisma = new PrismaClient();
 const app = express();
 const server = http.createServer(app);
 
@@ -50,6 +52,38 @@ app.use('/api/chats', chatRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/upload', uploadRouter);
+
+// Public platform live stats endpoint (real counts from database)
+app.get('/api/stats/public', async (_req, res) => {
+  try {
+    const activeDeals = await prisma.requirement.count({
+      where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
+    });
+    const verifiedWorkers = await prisma.workerProfile.count({
+      where: { verificationState: 'VERIFIED' },
+    });
+    const completedDeals = await prisma.requirement.count({
+      where: { status: 'COMPLETED' },
+    });
+    const escrowAgg = await prisma.escrowTransaction.aggregate({
+      where: { status: 'HELD' },
+      _sum: { amountHeld: true },
+    });
+
+    return res.json({
+      success: true,
+      stats: {
+        activeDeals,
+        verifiedWorkers,
+        completedDeals,
+        escrowVolume: escrowAgg._sum.amountHeld || 0,
+      },
+    });
+  } catch (error) {
+    console.error('public stats error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch public stats' });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {

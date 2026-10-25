@@ -116,8 +116,12 @@ export const App: React.FC = () => {
             />
             <Route path="/portal-select" element={<PortalSelectPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/customer/login" element={<LoginPage defaultRole="customer" />} />
+            <Route path="/worker/login" element={<LoginPage defaultRole="worker" />} />
             <Route path="/admin/login" element={<LoginPage defaultRole="admin" />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/customer/register" element={<RegisterPage defaultRole="customer" />} />
+            <Route path="/worker/register" element={<RegisterPage defaultRole="worker" />} />
 
             {/* CUSTOMER PORTAL */}
             <Route

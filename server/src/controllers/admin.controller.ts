@@ -279,3 +279,80 @@ export const addCategoryField = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ success: false, message: 'Failed to add field.' });
   }
 };
+
+export const getDisputes = async (_req: AuthRequest, res: Response) => {
+  try {
+    const disputes = await prisma.dispute.findMany({
+      include: {
+        order: {
+          include: {
+            customer: { select: { id: true, name: true, email: true, city: true } },
+            worker: { include: { user: { select: { id: true, name: true, email: true, city: true } } } },
+            requirement: { select: { id: true, title: true } },
+          },
+        },
+        filedBy: { select: { id: true, name: true, role: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return res.json({ success: true, disputes });
+  } catch (error: any) {
+    console.error('getDisputes error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch disputes.' });
+  }
+};
+
+export const getDeliveries = async (_req: AuthRequest, res: Response) => {
+  try {
+    const deliveries = await prisma.delivery.findMany({
+      include: {
+        order: {
+          include: {
+            customer: { select: { id: true, name: true, city: true } },
+            worker: { include: { user: { select: { id: true, name: true, city: true } } } },
+            requirement: { select: { id: true, title: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return res.json({ success: true, deliveries });
+  } catch (error: any) {
+    console.error('getDeliveries error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch deliveries.' });
+  }
+};
+
+export const getFlaggedItems = async (_req: AuthRequest, res: Response) => {
+  try {
+    const disputes = await prisma.dispute.findMany({
+      where: { status: 'OPEN' },
+      include: {
+        order: {
+          include: {
+            customer: true,
+            worker: { include: { user: true } },
+            requirement: true,
+          },
+        },
+      },
+      take: 10,
+    });
+
+    const flagged = disputes.map((d) => ({
+      id: d.id,
+      target: d.order ? `ORDER #${d.order.orderNumber}: ${d.order.requirement?.title || 'Contract'}` : 'Escrow Dispute',
+      type: 'Open Escrow Dispute',
+      reason: d.reason,
+      severity: 'HIGH',
+      date: d.createdAt.toISOString().split('T')[0],
+      actionNeeded: 'Review Dispute Evidence',
+    }));
+
+    return res.json({ success: true, flagged });
+  } catch (error: any) {
+    console.error('getFlaggedItems error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch flagged items.' });
+  }
+};
+

@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('dd_token');
     setToken(null);
     setUser(null);
-    window.location.href = '/';
+    window.location.href = '/portal-select';
   };
 
   const updateUser = (userData: Partial<User>) => {

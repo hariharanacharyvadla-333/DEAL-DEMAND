@@ -10,40 +10,53 @@ import {
   ShieldCheck,
   Zap,
   ArrowRight,
-  Hammer,
-  Flame,
-  Paintbrush,
-  BrickWall,
   Wrench,
-  Compass,
-  Utensils,
   ChevronDown,
-  Clock,
-  MapPin,
   Lock,
-  Quote,
-  Star,
-  CheckCircle2,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [stats, setStats] = useState({
+    activeDeals: 0,
+    verifiedWorkers: 0,
+    completedDeals: 0,
+    escrowVolume: 0,
+  });
+  const [realWorkers, setRealWorkers] = useState<any[]>([]);
 
   useEffect(() => {
+    // Fetch live categories from database
     fetch('/api/categories')
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setCategories(d.categories);
       })
       .catch(() => {});
+
+    // Fetch real platform stats from database
+    fetch('/api/stats/public')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && d.stats) setStats(d.stats);
+      })
+      .catch(() => {});
+
+    // Fetch verified workers from database
+    fetch('/api/workers?verifiedOnly=true')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && d.workers) setRealWorkers(d.workers);
+      })
+      .catch(() => {});
   }, []);
 
-  const stats = [
-    { label: 'Verified Artisans', value: '25+' },
-    { label: 'Physical Deals Posted', value: '17+' },
-    { label: 'Metros & Cities', value: '8' },
-    { label: 'Escrow Protected', value: '100%' },
+  const statsList = [
+    { label: 'Active Requirements', value: stats.activeDeals.toString() },
+    { label: 'Verified Artisans', value: stats.verifiedWorkers.toString() },
+    { label: 'Completed Deals', value: stats.completedDeals.toString() },
+    { label: 'Escrow Protected', value: `₹${stats.escrowVolume.toLocaleString()}` },
   ];
 
   const steps = [
@@ -61,142 +74,6 @@ export const LandingPage: React.FC = () => {
       num: '03',
       title: 'Escrow-Secured Completion',
       desc: 'Funds are securely locked in platform escrow. Money is released milestone-by-milestone only when you inspect the craft and approve the results.',
-    },
-  ];
-
-  const featuredWorkers = [
-    {
-      name: 'Rajesh Sharma',
-      trade: 'Master Carpenter',
-      city: 'Bengaluru',
-      exp: '14 yrs exp',
-      rating: 4.9,
-      reviews: 38,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160',
-      skills: 'CP Teak Doors, Modular Wardrobes, Antique Polish',
-    },
-    {
-      name: 'Girish Naidu',
-      trade: 'Heritage Wood Carver',
-      city: 'Hyderabad',
-      exp: '16 yrs exp',
-      rating: 4.9,
-      reviews: 42,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160',
-      skills: 'Rosewood Carving, Heritage Pillars, Teak Beds',
-    },
-    {
-      name: 'Vikas Kumar',
-      trade: 'Master Wall Decorator',
-      city: 'Mumbai',
-      exp: '8 yrs exp',
-      rating: 4.9,
-      reviews: 35,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=160',
-      skills: 'Royale Texture Art, PU Polishing, Weatherproofing',
-    },
-    {
-      name: 'Harpreet Singh',
-      trade: 'Smart Home Electrician',
-      city: 'Delhi NCR',
-      exp: '9 yrs exp',
-      rating: 4.9,
-      reviews: 52,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160',
-      skills: 'Schneider Wiring, Inverters, Home Automation',
-    },
-    {
-      name: 'Suresh Babu',
-      trade: 'Metal Fabricator',
-      city: 'Bengaluru',
-      exp: '10 yrs exp',
-      rating: 4.8,
-      reviews: 29,
-      badge: 'VERIFIED',
-      image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=160',
-      skills: 'Laser Cut SS Panels, MS Compound Gates, Railings',
-    },
-    {
-      name: 'Farhan Ali',
-      trade: 'Licensed Sanitary Plumber',
-      city: 'Delhi NCR',
-      exp: '12 yrs exp',
-      rating: 4.7,
-      reviews: 41,
-      badge: 'VERIFIED',
-      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160',
-      skills: 'Jaquar Concealed Diverters, Pressure Pumps, Drainage',
-    },
-    {
-      name: 'Gopal Krishnan',
-      trade: 'Marble & Tiling Master',
-      city: 'Kochi',
-      exp: '15 yrs exp',
-      rating: 4.8,
-      reviews: 33,
-      badge: 'VERIFIED',
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160',
-      skills: 'Italian Marble Mirror Polishing, Large Format Tiles',
-    },
-    {
-      name: 'Anand Murthy',
-      trade: 'Turnkey Modular Kitchens',
-      city: 'Bengaluru',
-      exp: '10 yrs exp',
-      rating: 4.9,
-      reviews: 36,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160',
-      skills: 'BWP Marine Ply, Blum Tandembox, Quartz Slabs',
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: 'Ramesh & Sunita Kulkarni',
-      location: 'Whitefield, Bengaluru',
-      role: 'Customer • Custom Teak Double Door',
-      text: 'We were nervous about paying high advances upfront for custom teak carpentry. Deal&Demand’s milestone escrow changed everything. Rajesh Sharma executed magnificent carving and we released funds only after installation.',
-      rating: 5,
-    },
-    {
-      name: 'Priya Venkataraman',
-      location: 'Chetpet, Chennai',
-      role: 'Customer • 12mm Shower Partitions',
-      text: 'Comparing itemized quotes side-by-side was so refreshing. Every carpenter and glass fitter listed their exact material brand and hardware. No hidden markup or surprise extras.',
-      rating: 5,
-    },
-    {
-      name: 'Amit & Neha Sharma',
-      location: 'Greater Kailash, Delhi NCR',
-      role: 'Customer • Full Concealed Rewiring',
-      text: 'Our electrician Harpreet completed the entire 3-phase rewiring on schedule. The platform photo proof verification before releasing milestone payments kept everyone accountable.',
-      rating: 5,
-    },
-    {
-      name: 'Rajesh Sharma',
-      location: 'Bengaluru',
-      role: 'Worker Partner • Master Carpenter',
-      text: 'As an artisan with 14 years in the trade, Deal&Demand gives me serious clients who value quality woodwork. Payment is guaranteed in escrow before I even cut the first plank of teak.',
-      rating: 5,
-    },
-    {
-      name: 'Deepak Verma',
-      location: 'Mumbai',
-      role: 'Worker Partner • Waterproofing Specialist',
-      text: 'The quotation builder allows me to specify chemicals, warranty terms, and labour clearly. Fair commission, verified customers, and instant UPI payouts to my bank.',
-      rating: 5,
-    },
-    {
-      name: 'Anand Murthy',
-      location: 'Bengaluru',
-      role: 'Worker Partner • Modular Kitchen Artisan',
-      text: 'The AI match algorithm connected me to clients who specifically needed marine-grade BWP kitchens with Blum fittings. Closed 3 large orders in my first month.',
-      rating: 5,
     },
   ];
 
@@ -271,14 +148,14 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Live Stats Counters */}
+          {/* Real Live Stats Counters */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {stats.map((s) => (
+            {statsList.map((s) => (
               <Card key={s.label} className="p-6 text-center border-[#D9D9D9] bg-white shadow-xs">
                 <p className="font-dot text-3xl sm:text-4xl font-black text-[#0A0A0A] mb-1 tracking-tight">
                   {s.value}
                 </p>
-                <p className="text-xs uppercase font-semibold tracking-wider text-[#4A4A4A]">
+                <p className="text-xs text-[#4A4A4A] font-medium uppercase tracking-wider">
                   {s.label}
                 </p>
               </Card>
@@ -287,16 +164,19 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. THREE-STEP PROCESS */}
+      {/* 2. HOW IT WORKS */}
       <section className="py-20 border-b border-[#E5E5E5] bg-[#F7F7F7] w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
-              STREAMLINED WORKFLOW
+              STREAMLINED EXECUTION
             </span>
-            <h2 className="font-dot text-3xl font-black text-[#0A0A0A] mt-2 tracking-tight">
+            <h2 className="font-dot text-3xl sm:text-4xl font-black text-[#0A0A0A] mt-2 tracking-tight">
               HOW DEAL&DEMAND WORKS
             </h2>
+            <p className="text-sm text-[#4A4A4A] mt-2 leading-relaxed">
+              Three clear stages designed for fair pricing, verified workmanship, and risk-free payouts.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -353,7 +233,7 @@ export const LandingPage: React.FC = () => {
                   </p>
                   <div className="mt-3 flex items-center justify-between text-xs text-[#4A4A4A]">
                     <span>Verified Pros</span>
-                    <span className="text-[#0A0A0A] font-semibold">5% Escrow</span>
+                    <span className="text-[#0A0A0A] font-semibold">{cat.commissionPct || 5}% Escrow</span>
                   </div>
                 </div>
               </Link>
@@ -362,204 +242,69 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. FEATURED TOP-RATED WORKERS (8 PROS) */}
-      <section className="py-20 border-b border-[#E5E5E5] bg-[#F7F7F7] w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
-                VERIFIED MASTER ARTISANS
-              </span>
-              <h2 className="font-dot text-3xl font-black text-[#0A0A0A] mt-1 tracking-tight">
-                FEATURED PROFESSIONALS ACROSS INDIA
-              </h2>
+      {/* 4. VERIFIED ARTISANS (ONLY SHOWN WHEN REAL WORKERS EXIST) */}
+      {realWorkers.length > 0 && (
+        <section className="py-20 border-b border-[#E5E5E5] bg-[#F7F7F7] w-full">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
+                  VERIFIED MASTER ARTISANS
+                </span>
+                <h2 className="font-dot text-3xl font-black text-[#0A0A0A] mt-1 tracking-tight">
+                  FEATURED PROFESSIONALS ACROSS INDIA
+                </h2>
+              </div>
+              <Link to="/customer/workers" className="mt-4 md:mt-0 text-sm text-[#0A0A0A] hover:text-[#FF5A1F] flex items-center gap-1 font-semibold">
+                Browse All Artisans <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-            <Link to="/customer/workers" className="mt-4 md:mt-0 text-sm text-[#0A0A0A] hover:text-[#FF5A1F] flex items-center gap-1 font-semibold">
-              Browse All 25+ Artisans <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredWorkers.map((w) => (
-              <Card key={w.name} className="p-6 bg-white border border-[#D9D9D9] hover:border-black hover:shadow-nothing-hover transition-all flex flex-col justify-between rounded-nothing">
-                <div>
-                  <div className="flex items-start justify-between mb-4">
-                    <img
-                      src={w.image}
-                      alt={w.name}
-                      className="w-14 h-14 rounded-full object-cover border border-[#D9D9D9]"
-                    />
-                    <Badge variant={w.badge === 'PREMIUM' ? 'premium' : 'verified'}>
-                      {w.badge}
-                    </Badge>
-                  </div>
-
-                  <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-1">
-                    {w.name}
-                    <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                  </h3>
-                  <p className="text-xs font-semibold text-[#4A4A4A] mt-0.5">
-                    {w.trade} • {w.exp}
-                  </p>
-
-                  <div className="flex items-center gap-2 mt-2 text-xs text-[#4A4A4A]">
-                    <RatingStars value={w.rating} showNumber size="sm" />
-                    <span>({w.reviews})</span>
-                    <span>• {w.city}</span>
-                  </div>
-
-                  <p className="text-xs text-[#4A4A4A] mt-3 line-clamp-2 leading-relaxed">
-                    {w.skills}
-                  </p>
-                </div>
-
-                <div className="mt-5 pt-4 border-t border-[#D9D9D9]">
-                  <Link to="/customer/deals/new" className="block">
-                    <Button variant="secondary" size="sm" className="w-full justify-center text-xs">
-                      Invite to Deal
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. SAMPLE DEAL & QUOTATION COMPARISON PREVIEW */}
-      <section className="py-20 border-b border-[#E5E5E5] bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
-              TRANSPARENT COMPARISON
-            </span>
-            <h2 className="font-dot text-3xl font-black text-[#0A0A0A] mt-2 tracking-tight">
-              COMPARE REAL QUOTATIONS SIDE-BY-SIDE
-            </h2>
-            <p className="text-sm text-[#4A4A4A] mt-2 leading-relaxed">
-              Every bid contains explicit itemized material, labour, logistics and tax costs. No hidden surcharges.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Quote Card 1: Rajesh Sharma */}
-            <Card className="p-6 bg-white border border-[#D9D9D9] hover:border-black transition-all rounded-nothing">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120"
-                    alt="Rajesh Sharma"
-                    className="w-12 h-12 rounded-full object-cover border border-[#D9D9D9]"
-                  />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {realWorkers.map((w) => (
+                <Card key={w.id} className="p-6 bg-white border border-[#D9D9D9] hover:border-black hover:shadow-nothing-hover transition-all flex flex-col justify-between rounded-nothing">
                   <div>
-                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-1.5">
-                      Rajesh Sharma
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-14 h-14 rounded-full bg-neutral-100 border border-[#D9D9D9] flex items-center justify-center font-bold text-lg text-[#0A0A0A]">
+                        {w.user?.name?.charAt(0) || 'P'}
+                      </div>
                       <Badge variant="verified">VERIFIED</Badge>
+                    </div>
+
+                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-1">
+                      {w.user?.name}
+                      <ShieldCheck className="w-4 h-4 text-[#10B981]" />
                     </h3>
-                    <p className="text-xs text-[#4A4A4A] font-medium">Master Carpenter • 14 yrs exp</p>
-                  </div>
-                </div>
-                <Badge variant="orange">AI BEST QUALITY</Badge>
-              </div>
+                    <p className="text-xs font-semibold text-[#4A4A4A] mt-0.5">
+                      {w.categories?.[0]?.category?.name || 'Artisan'} • {w.yearsExperience} yrs exp
+                    </p>
 
-              <div className="border-t border-b border-dashed border-[#D9D9D9] py-3 my-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-xs text-[#4A4A4A] font-semibold">Total Price Quote:</span>
-                  <span className="font-mono text-xl font-bold text-[#0A0A0A]">₹42,000</span>
-                </div>
-                <div className="space-y-1.5 text-xs text-[#2A2A2A]">
-                  <div className="flex justify-between">
-                    <span>Grade-A CP Teak Timber:</span>
-                    <span className="font-mono font-semibold">₹24,000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Master Joinery Labour:</span>
-                    <span className="font-mono font-semibold">₹12,000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Hafele Brass Hinges & Lock:</span>
-                    <span className="font-mono font-semibold">₹3,500</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Transit & Site Fitting:</span>
-                    <span className="font-mono font-semibold">₹2,500</span>
-                  </div>
-                </div>
-              </div>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-[#4A4A4A]">
+                      <RatingStars value={w.rating} showNumber size="sm" />
+                      <span>({w.totalReviews})</span>
+                      <span>• {w.serviceArea}</span>
+                    </div>
 
-              <div className="flex items-center justify-between text-xs text-[#4A4A4A] mb-5 font-semibold">
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#4A4A4A]" /> 7 Days</span>
-                <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" /> 36 Months Warranty</span>
-              </div>
-
-              <Link to="/customer/deals/new">
-                <Button variant="primary" size="sm" className="w-full justify-center">
-                  Post Similar Requirement
-                </Button>
-              </Link>
-            </Card>
-
-            {/* Quote Card 2: Girish Naidu */}
-            <Card className="p-6 bg-white border border-[#D9D9D9] hover:border-black transition-all rounded-nothing">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120"
-                    alt="Girish Naidu"
-                    className="w-12 h-12 rounded-full object-cover border border-[#D9D9D9]"
-                  />
-                  <div>
-                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-1.5">
-                      Girish Naidu
-                      <Badge variant="verified">VERIFIED</Badge>
-                    </h3>
-                    <p className="text-xs text-[#4A4A4A] font-medium">Heritage Wood Carver • 16 yrs exp</p>
+                    <p className="text-xs text-[#4A4A4A] mt-3 line-clamp-2 leading-relaxed">
+                      {w.skills}
+                    </p>
                   </div>
-                </div>
-                <Badge variant="fast">FASTEST DELIVERY</Badge>
-              </div>
 
-              <div className="border-t border-b border-dashed border-[#D9D9D9] py-3 my-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-xs text-[#4A4A4A] font-semibold">Total Price Quote:</span>
-                  <span className="font-mono text-xl font-bold text-[#0A0A0A]">₹38,500</span>
-                </div>
-                <div className="space-y-1.5 text-xs text-[#2A2A2A]">
-                  <div className="flex justify-between">
-                    <span>Seasoned Timber & Carcass:</span>
-                    <span className="font-mono font-semibold">₹21,000</span>
+                  <div className="mt-5 pt-4 border-t border-[#D9D9D9]">
+                    <Link to="/customer/deals/new" className="block">
+                      <Button variant="secondary" size="sm" className="w-full justify-center text-xs">
+                        Invite to Deal
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Carpentry Execution:</span>
-                    <span className="font-mono font-semibold">₹11,500</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Melamine Matte Polish:</span>
-                    <span className="font-mono font-semibold">₹4,000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Local Transport & Setup:</span>
-                    <span className="font-mono font-semibold">₹2,000</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-[#4A4A4A] mb-5 font-semibold">
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-amber-600" /> 5 Days</span>
-                <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" /> 24 Months Warranty</span>
-              </div>
-
-              <Link to="/customer/deals/new">
-                <Button variant="secondary" size="sm" className="w-full justify-center">
-                  Post Similar Requirement
-                </Button>
-              </Link>
-            </Card>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* 6. TRUST & SAFETY (ESCROW MIDDLE-LAYER) */}
+      {/* 5. TRUST & SAFETY (ESCROW MIDDLE-LAYER) */}
       <section className="py-20 border-b border-[#E5E5E5] bg-[#F7F7F7] text-[#0A0A0A] w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -608,50 +353,8 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 7. REAL TESTIMONIALS (6 TESTIMONIALS) */}
+      {/* 6. FAQ ACCORDION */}
       <section className="py-20 border-b border-[#E5E5E5] bg-white w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
-              VERIFIED EXPERIENCES
-            </span>
-            <h2 className="font-dot text-3xl font-black text-[#0A0A0A] mt-2 tracking-tight">
-              WHAT HOMEOWNERS & ARTISANS SAY
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.map((t, idx) => (
-              <Card key={idx} className="p-6 bg-white border border-[#D9D9D9] hover:border-black transition-all flex flex-col justify-between rounded-nothing">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex gap-1 text-amber-500">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <Quote className="w-5 h-5 text-neutral-300" />
-                  </div>
-                  <p className="text-sm text-[#2A2A2A] leading-relaxed italic mb-6">
-                    "{t.text}"
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-[#D9D9D9]">
-                  <h3 className="text-sm font-bold text-[#0A0A0A]">{t.name}</h3>
-                  <p className="text-xs text-[#4A4A4A] mt-0.5">{t.role}</p>
-                  <p className="text-[11px] text-[#6B6B6B] flex items-center gap-1 mt-1">
-                    <MapPin className="w-3 h-3" /> {t.location}
-                  </p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 8. FAQ ACCORDION (8 ITEMS) */}
-      <section className="py-20 border-b border-[#E5E5E5] bg-[#F7F7F7] w-full">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-xs uppercase tracking-widest text-[#FF5A1F] font-bold">
@@ -690,14 +393,14 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 9. FINAL CALL TO ACTION */}
+      {/* 7. FINAL CALL TO ACTION */}
       <section className="py-24 bg-white hero-dot-grid text-center border-b border-[#E5E5E5] w-full">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-dot text-3xl sm:text-5xl font-black text-[#0A0A0A] tracking-tight mb-4">
             READY TO BUILD OR GET HIRED?
           </h2>
           <p className="text-[#4A4A4A] text-base max-w-xl mx-auto mb-8 font-normal">
-            Join thousands of customers and skilled workers across India using Deal&Demand today.
+            Join customers and skilled workers across India using Deal&Demand today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/customer/deals/new">

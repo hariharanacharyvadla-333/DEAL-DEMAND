@@ -31,15 +31,31 @@ npm run dev
 
 ---
 
-## 🔑 Demo Access Credentials
+## 🔐 Authentication & Administrator Account Setup
 
-The database is seeded with realistic Indian marketplace data. Log in through the standard email + password forms using the credentials below (credentials are documented in this README only, never on the UI):
+All mock users and fake demo accounts have been removed. Every account is stored persistently in the database (`server/prisma/dev.db`):
 
-| Portal Role | Email | Password | Access Route | What You Can Test |
-|---|---|---|---|---|
-| **Customer** | `customer@demo.com` | `password123` | `/portal-select` $\rightarrow$ Customer Login | 5-Step Deal Wizard with AI Specs Drawer, Side-by-side Quotation Comparison Matrix, Escrow Milestone Approvals, 4-Metric Reviews |
-| **Worker (Artisan)** | `worker@demo.com` | `password123` | `/portal-select` $\rightarrow$ Worker Login | Browse Feed with AI Match Scores, Itemized Quotation Builder (Material/Labour/Tax), Milestone Photo Evidence Uploader, Wallet Payouts |
-| **Admin** | `admin@demo.com` | `password123` | Top-left Shield icon on `/portal-select` or `/admin/login` | Master KPI Counters, Worker KYC Verification Queue (Aadhaar & Trade License Review), Escrow Middle-Layer Release/Refunds, Dispute Desk |
+- **Customer Registration**: Register dynamically at `/customer/register` with full name, email, 10-digit mobile number, city, and secure password (minimum 8 characters with letters & numbers).
+- **Artisan / Worker Onboarding**: Register via the multi-step verification wizard at `/worker/register` (Account details $\rightarrow$ Category & skills $\rightarrow$ Government ID / Certificate upload $\rightarrow$ Bank/UPI details).
+- **Platform Administrator**: Created via the minimal re-runnable seed script from environment variables.
+
+### Configuring Admin Credentials
+
+Configure your administrator credentials in `server/.env` (or copy from `.env.example`):
+
+```env
+ADMIN_EMAIL="admin@dealndemand.com"
+ADMIN_PASSWORD="AdminPassword123!"
+```
+
+To initialize or update the admin account and the 14 marketplace categories, run:
+
+```bash
+cd server
+npm run seed
+```
+
+> **Note**: Administrators cannot self-register. The seed script verifies if the administrator already exists, hashing the password with `bcrypt`. You can access the Admin Desk at `/admin/login` or via the top-left shield icon on `/portal-select`.
 
 ---
 

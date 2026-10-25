@@ -17,68 +17,31 @@ import {
 
 export const AdminEscrowDeliveriesPage: React.FC = () => {
   const [escrows, setEscrows] = useState<any[]>([]);
+  const [deliveries, setDeliveries] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isReleasing, setIsReleasing] = useState<string | null>(null);
 
-  // 4 Delivery records across different stages
-  const deliveryStages = [
-    {
-      id: 'DEL-2026-901',
-      orderNumber: 'ORD-2026-8921',
-      item: 'Suspended Gypsum Ceiling & Cove Light Channels',
-      customer: 'Priya Varma (Bengaluru)',
-      artisan: 'Irfan Sheikh',
-      stage: 'DELIVERED',
-      trackingId: 'LOG-DEL-BLR-8921',
-      date: '2026-10-09',
-      proofUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
-    },
-    {
-      id: 'DEL-2026-902',
-      orderNumber: 'ORD-2026-7731',
-      item: 'BWP Marine Ply Modular Kitchen Cabinets (L-Shape)',
-      customer: 'Aarav Mehta (Bengaluru)',
-      artisan: 'Anand Murthy',
-      stage: 'IN_TRANSIT',
-      trackingId: 'LOG-DEL-BLR-7731',
-      date: '2026-10-10',
-      proofUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400',
-    },
-    {
-      id: 'DEL-2026-903',
-      orderNumber: 'ORD-2026-6642',
-      item: 'Hafele SS Balcony Railing (28 running ft)',
-      customer: 'Kunal Deshmukh (Mumbai)',
-      artisan: 'Suresh Babu',
-      stage: 'DISPATCHED_WORKSHOP',
-      trackingId: 'LOG-DEL-BOM-6642',
-      date: '2026-10-10',
-      proofUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400',
-    },
-    {
-      id: 'DEL-2026-904',
-      orderNumber: 'ORD-2026-5519',
-      item: 'Teak Wood Double Door Carving Frame',
-      customer: 'Rohan Kapoor (Delhi NCR)',
-      artisan: 'Rajesh Sharma',
-      stage: 'PENDING_DISPATCH',
-      trackingId: 'LOG-DEL-DEL-5519',
-      date: '2026-10-11',
-      proofUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400',
-    },
-  ];
-
   const fetchEscrowBoard = async () => {
     try {
       const token = localStorage.getItem('dd_token');
-      const res = await fetch('/api/admin/escrow-board', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const [escrowRes, delRes] = await Promise.all([
+        fetch('/api/admin/escrow-board', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('/api/admin/deliveries', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      const data = await escrowRes.json();
+      const delData = await delRes.json();
+
       if (data.success) {
         setEscrows(data.escrows || []);
         setPayouts(data.payouts || []);
+      }
+      if (delData.success) {
+        setDeliveries(delData.deliveries || []);
       }
     } catch (err) {
       console.error('Failed to load escrow board:', err);
@@ -140,6 +103,14 @@ export const AdminEscrowDeliveriesPage: React.FC = () => {
 
         {isLoading ? (
           <Skeleton className="h-48" />
+        ) : escrows.length === 0 ? (
+          <Card className="p-10 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <Coins className="w-10 h-10 text-[#FF5A1F] mb-3" />
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">No escrow transactions yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto leading-relaxed font-normal">
+              When customers accept quotations and fund milestones, platform escrow trust transactions will appear here.
+            </p>
+          </Card>
         ) : (
           <div className="space-y-4">
             {escrows.map((e) => (
@@ -202,42 +173,52 @@ export const AdminEscrowDeliveriesPage: React.FC = () => {
         )}
       </div>
 
-      {/* 4 Delivery Records Across Different Stages */}
+      {/* Delivery Records Across Different Stages */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-dot text-xl font-bold text-[#0A0A0A] tracking-tight flex items-center gap-2">
             <Truck className="w-5 h-5 text-[#10B981]" />
-            DELIVERY & ON-SITE INSPECTION RECORDS (4 STAGES)
+            DELIVERY & ON-SITE INSPECTION RECORDS ({deliveries.length})
           </h2>
           <span className="text-xs font-mono font-semibold text-[#4A4A4A]">
             Logistics Pipeline
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {deliveryStages.map((del) => (
-            <Card key={del.id} className="p-5 bg-white border border-[#D9D9D9] rounded-nothing-sm flex items-start gap-4">
-              <div className="w-16 h-16 rounded-nothing-sm overflow-hidden border border-[#D9D9D9] shrink-0 bg-white shadow-2xs">
-                <img src={del.proofUrl} alt={del.item} className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="font-mono text-xs font-bold text-[#0A0A0A]">{del.trackingId}</span>
-                  <Badge variant={del.stage === 'DELIVERED' ? 'success' : 'orange'}>
-                    {del.stage}
-                  </Badge>
+        {deliveries.length === 0 ? (
+          <Card className="p-10 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <Truck className="w-10 h-10 text-[#10B981] mb-3" />
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">No active delivery dispatches yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto leading-relaxed font-normal">
+              Active physical dispatches, courier tracking IDs, and on-site delivery proofs will appear here once artisans dispatch completed works.
+            </p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {deliveries.map((del) => (
+              <Card key={del.id} className="p-5 bg-white border border-[#D9D9D9] rounded-nothing-sm flex items-start gap-4">
+                <div className="w-16 h-16 rounded-nothing-sm overflow-hidden border border-[#D9D9D9] shrink-0 bg-white shadow-2xs">
+                  <img src={del.proofUrls?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400'} alt={del.trackingId} className="w-full h-full object-cover" />
                 </div>
-                <h3 className="text-sm font-bold text-[#0A0A0A] truncate">{del.item}</h3>
-                <p className="text-xs text-[#4A4A4A] mt-0.5">
-                  {del.customer} • Pro: {del.artisan}
-                </p>
-                <p className="text-[11px] font-mono text-[#6B6B6B] mt-1">
-                  Order: {del.orderNumber} • Updated {del.date}
-                </p>
-              </div>
-            </Card>
-          ))}
-        </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-mono text-xs font-bold text-[#0A0A0A]">{del.trackingId || del.id}</span>
+                    <Badge variant={del.status === 'DELIVERED' ? 'success' : 'orange'}>
+                      {del.status}
+                    </Badge>
+                  </div>
+                  <h3 className="text-sm font-bold text-[#0A0A0A] truncate">{del.order?.requirement?.title || 'Contract Order'}</h3>
+                  <p className="text-xs text-[#4A4A4A] mt-0.5">
+                    {del.order?.customer?.name} • Pro: {del.order?.worker?.user?.name}
+                  </p>
+                  <p className="text-[11px] font-mono text-[#6B6B6B] mt-1">
+                    Order: {del.order?.orderNumber} • Updated {new Date(del.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Worker Withdrawal Payout Requests */}
@@ -247,29 +228,39 @@ export const AdminEscrowDeliveriesPage: React.FC = () => {
           RECENT WORKER WITHDRAWAL DISBURSEMENTS ({payouts.length})
         </h2>
 
-        <div className="space-y-3">
-          {payouts.map((p) => (
-            <Card key={p.id} className="p-5 bg-white border border-[#D9D9D9] flex items-center justify-between rounded-nothing-sm">
-              <div>
-                <h3 className="text-sm font-bold text-[#0A0A0A]">
-                  {p.worker?.user?.name || 'Verified Artisan'}
-                </h3>
-                <p className="text-xs text-[#4A4A4A] font-mono mt-0.5">
-                  {p.id} • Processed on {new Date(p.createdAt).toLocaleDateString()}
-                </p>
-              </div>
+        {payouts.length === 0 ? (
+          <Card className="p-8 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <ArrowUpRight className="w-10 h-10 text-[#4A4A4A] mb-2" />
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">No payout withdrawal requests yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto leading-relaxed font-normal">
+              When verified artisans request wallet balance payouts to their bank accounts or UPI IDs, they will appear here for settlement.
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {payouts.map((p) => (
+              <Card key={p.id} className="p-5 bg-white border border-[#D9D9D9] flex items-center justify-between rounded-nothing-sm">
+                <div>
+                  <h3 className="text-sm font-bold text-[#0A0A0A]">
+                    {p.worker?.user?.name || 'Verified Artisan'}
+                  </h3>
+                  <p className="text-xs text-[#4A4A4A] font-mono mt-0.5">
+                    {p.id} • Processed on {new Date(p.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
 
-              <div className="flex items-center gap-4">
-                <span className="font-mono text-base font-bold text-[#0A0A0A]">
-                  ₹{p.amount.toLocaleString()}
-                </span>
-                <Badge variant={p.status === 'APPROVED' ? 'success' : 'orange'}>
-                  {p.status}
-                </Badge>
-              </div>
-            </Card>
-          ))}
-        </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-base font-bold text-[#0A0A0A]">
+                    ₹{p.amount.toLocaleString()}
+                  </span>
+                  <Badge variant={p.status === 'APPROVED' ? 'success' : 'orange'}>
+                    {p.status}
+                  </Badge>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

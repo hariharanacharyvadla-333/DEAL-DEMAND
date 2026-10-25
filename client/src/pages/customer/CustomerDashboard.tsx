@@ -122,7 +122,7 @@ export const CustomerDashboard: React.FC = () => {
             <Coins className="w-4 h-4 text-[#10B981]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            ₹{(totalEscrowHeld || 45000).toLocaleString()}
+            ₹{(totalEscrowHeld || 0).toLocaleString()}
           </p>
           <span className="text-sm font-semibold text-[#10B981] mt-1.5 block">100% Protected</span>
         </Card>
@@ -236,48 +236,63 @@ export const CustomerDashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {recommendedWorkers.map((worker) => (
-            <Card
-              key={worker.id}
-              className="p-5 bg-white border border-[#D9D9D9] hover:border-black hover:shadow-nothing-hover transition-all flex flex-col justify-between rounded-nothing"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={worker.user?.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100'}
-                    alt={worker.user?.name}
-                    className="w-12 h-12 rounded-full object-cover border border-[#D9D9D9]"
-                  />
-                  <div className="overflow-hidden">
-                    <h4 className="text-sm font-bold text-[#0A0A0A] truncate flex items-center gap-1">
-                      {worker.user?.name}
-                      <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
-                    </h4>
-                    <p className="text-xs text-[#4A4A4A] truncate font-medium">
-                      {worker.categories?.[0]?.category?.name || 'Artisan'} • {worker.serviceArea || 'Bengaluru'}
-                    </p>
+        {recommendedWorkers.length === 0 ? (
+          <Card className="p-8 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
+            <ShieldCheck className="w-10 h-10 text-[#4A4A4A] mb-3" />
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">No verified artisans yet</h3>
+            <p className="text-sm text-[#4A4A4A] max-w-md mx-auto mb-4 leading-relaxed font-normal">
+              New artisans are currently undergoing KYC verification by administrators. Once approved, top-rated craftspeople will appear here.
+            </p>
+            <Link to="/customer/deals/new">
+              <Button variant="outline" size="sm">
+                Post a Requirement to Invite Artisans
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {recommendedWorkers.map((worker) => (
+              <Card
+                key={worker.id}
+                className="p-5 bg-white border border-[#D9D9D9] hover:border-black hover:shadow-nothing-hover transition-all flex flex-col justify-between rounded-nothing"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <img
+                      src={worker.user?.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100'}
+                      alt={worker.user?.name}
+                      className="w-12 h-12 rounded-full object-cover border border-[#D9D9D9]"
+                    />
+                    <div className="overflow-hidden">
+                      <h4 className="text-sm font-bold text-[#0A0A0A] truncate flex items-center gap-1">
+                        {worker.user?.name}
+                        <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
+                      </h4>
+                      <p className="text-xs text-[#4A4A4A] truncate font-medium">
+                        {worker.categories?.[0]?.category?.name || 'Artisan'} • {worker.serviceArea || 'Bengaluru'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-[#4A4A4A] line-clamp-2 mb-3 leading-relaxed">
+                    {worker.tagline || worker.bio}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs font-mono text-[#4A4A4A] border-t border-[#E5E5E5] pt-2 mb-4 font-medium">
+                    <RatingStars value={worker.rating} showNumber size="sm" />
+                    <span>{worker.jobsCompleted} completed jobs</span>
                   </div>
                 </div>
 
-                <p className="text-sm text-[#4A4A4A] line-clamp-2 mb-3 leading-relaxed">
-                  {worker.tagline || worker.bio}
-                </p>
-
-                <div className="flex items-center justify-between text-xs font-mono text-[#4A4A4A] border-t border-[#E5E5E5] pt-2 mb-4 font-medium">
-                  <RatingStars value={worker.rating} showNumber size="sm" />
-                  <span>{worker.jobsCompleted} completed jobs</span>
-                </div>
-              </div>
-
-              <Link to={`/customer/workers/${worker.id}`}>
-                <Button variant="secondary" size="sm" className="w-full justify-center text-xs font-semibold">
-                  View Portfolio
-                </Button>
-              </Link>
-            </Card>
-          ))}
-        </div>
+                <Link to={`/customer/workers/${worker.id}`}>
+                  <Button variant="secondary" size="sm" className="w-full justify-center text-xs font-semibold">
+                    View Portfolio
+                  </Button>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
