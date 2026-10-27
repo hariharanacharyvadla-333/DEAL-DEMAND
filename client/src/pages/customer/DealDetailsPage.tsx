@@ -247,7 +247,7 @@ export const DealDetailsPage: React.FC = () => {
                   </span>
 
                   <div className="flex items-center gap-2">
-                    <Link to={`/customer/chat`}>
+                    <Link to={`/customer/chat?dealId=${deal.id}&workerId=${q.workerId}`}>
                       <Button variant="outline" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
                         Chat
                       </Button>

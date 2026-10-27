@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
 
 // Import Routes
 import authRouter from './routes/auth.routes';
@@ -31,7 +32,11 @@ const io = new SocketIOServer(server, {
   },
 });
 
+// Make io accessible in Express request controllers via req.app.get('io')
+app.set('io', io);
+
 const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'deal-and-demand-dev-secret-key-2026';
 
 // Middleware
 app.use(cors({ origin: '*' }));
@@ -95,39 +100,78 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// Socket.io Real-Time Engine
-io.on('connection', (socket) => {
-  console.log(`⚡ Socket client connected: ${socket.id}`);
+// Socket.io Real-Time Engine with JWT Handshake Auth
+io.use((socket, next) => {
+  const token =
+    socket.handshake.auth?.token ||
+    (socket.handshake.headers?.authorization
+      ? socket.handshake.headers.authorization.replace(/^Bearer\s+/i, '')
+      : null);
 
-  // Join chat room
-  socket.on('join_chat', (chatId: string) => {
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      socket.data.user = decoded;
+    } catch (err) {
+      console.warn(`Socket auth token verification failed:`, (err as Error).message);
+    }
+  }
+  next();
+});
+
+io.on('connection', (socket) => {
+  const user = socket.data.user;
+  console.log(`⚡ Socket client connected: ${socket.id} (User: ${user?.name || 'Anonymous'})`);
+
+  if (user?.userId) {
+    socket.join(`user:${user.userId}`);
+  }
+
+  // Join chat room (both chat:id and conversation:id formats supported)
+  socket.on('join_chat', async (chatId: string) => {
+    if (!chatId) return;
     socket.join(`chat:${chatId}`);
-    console.log(`User joined chat room: chat:${chatId}`);
+    socket.join(`conversation:${chatId}`);
+    console.log(`User ${user?.name || socket.id} joined chat room: ${chatId}`);
   });
 
   // Leave chat room
   socket.on('leave_chat', (chatId: string) => {
+    if (!chatId) return;
     socket.leave(`chat:${chatId}`);
+    socket.leave(`conversation:${chatId}`);
   });
 
-  // Message sent event
+  // Message sent event from client socket
   socket.on('send_message', (data: { chatId: string; message: any }) => {
-    // Broadcast to everyone in this chat room except sender
-    socket.to(`chat:${data.chatId}`).emit('new_message', data.message);
+    if (!data?.chatId) return;
+    socket.to(`chat:${data.chatId}`).to(`conversation:${data.chatId}`).emit('new_message', data.message);
   });
 
   // Typing indicators
-  socket.on('typing_start', (data: { chatId: string; userName: string }) => {
-    socket.to(`chat:${data.chatId}`).emit('user_typing', { userName: data.userName, isTyping: true });
+  socket.on('typing_start', (data: { chatId: string; userName?: string }) => {
+    if (!data?.chatId) return;
+    const userName = data.userName || user?.name || 'Participant';
+    socket.to(`chat:${data.chatId}`).to(`conversation:${data.chatId}`).emit('user_typing', {
+      chatId: data.chatId,
+      userName,
+      isTyping: true,
+    });
   });
 
   socket.on('typing_stop', (data: { chatId: string }) => {
-    socket.to(`chat:${data.chatId}`).emit('user_typing', { isTyping: false });
+    if (!data?.chatId) return;
+    socket.to(`chat:${data.chatId}`).to(`conversation:${data.chatId}`).emit('user_typing', {
+      chatId: data.chatId,
+      isTyping: false,
+    });
   });
 
-  // Real-time notification broadcast
+  // Real-time notification channel
   socket.on('join_user_channel', (userId: string) => {
-    socket.join(`user:${userId}`);
+    if (userId) {
+      socket.join(`user:${userId}`);
+    }
   });
 
   socket.on('disconnect', () => {

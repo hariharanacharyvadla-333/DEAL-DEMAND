@@ -99,7 +99,12 @@ export const WorkerProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link to={`/customer/chat?workerId=${worker.id}`}>
+              <Button variant="outline" size="md" icon={<MessageSquare className="w-4 h-4" />}>
+                Direct Chat
+              </Button>
+            </Link>
             <Link to="/customer/deals/new">
               <Button variant="orange" size="md">
                 Invite to Deal

@@ -137,7 +137,7 @@ export const WorkerQuotesPage: React.FC = () => {
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <Link to="/worker/chat">
+                  <Link to={`/worker/chat?dealId=${q.requirementId}&customerId=${q.requirement?.customerId}`}>
                     <Button variant="outline" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
                       Chat
                     </Button>

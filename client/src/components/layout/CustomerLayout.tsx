@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
+import { useToast } from '../../context/ToastContext';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -18,8 +20,49 @@ import {
 
 export const CustomerLayout: React.FC = () => {
   const { user, logout } = useAuth();
+  const { socket } = useSocket();
+  const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const token = localStorage.getItem('dd_token');
+        if (!token) return;
+        const res = await fetch('/api/chats', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.chats) {
+          const total = data.chats.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
+          setUnreadChatCount(total);
+        }
+      } catch {}
+    };
+
+    fetchUnread();
+
+    if (socket) {
+      const handleNotification = (data: any) => {
+        fetchUnread();
+        if (location.pathname !== '/customer/chat') {
+          toast.info(`Message from ${data.senderName}: "${(data.message?.text || '').slice(0, 35)}..."`);
+        }
+      };
+
+      socket.on('chat_notification', handleNotification);
+      socket.on('new_message', fetchUnread);
+      socket.on('messages_read', fetchUnread);
+
+      return () => {
+        socket.off('chat_notification', handleNotification);
+        socket.off('new_message', fetchUnread);
+        socket.off('messages_read', fetchUnread);
+      };
+    }
+  }, [socket, location.pathname]);
 
   const navItems = [
     { label: 'Dashboard', path: '/customer/dashboard', icon: LayoutDashboard },
@@ -69,9 +112,13 @@ export const CustomerLayout: React.FC = () => {
                   <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.highlight ? 'text-[#FF5A1F]' : 'text-[#4A4A4A]'}`} />
                   <span>{item.label}</span>
                 </div>
-                {item.highlight && !isActive && (
+                {item.label === 'Live Chat' && unreadChatCount > 0 ? (
+                  <span className="font-mono text-[10px] bg-[#FF5A1F] text-white px-1.5 py-0.2 rounded-full font-bold animate-pulse">
+                    {unreadChatCount}
+                  </span>
+                ) : item.highlight && !isActive ? (
                   <span className="font-mono text-[10px] bg-[#FF5A1F] text-white px-1.5 py-0.2 rounded-full uppercase font-semibold">NEW</span>
-                )}
+                ) : null}
               </Link>
             );
           })}

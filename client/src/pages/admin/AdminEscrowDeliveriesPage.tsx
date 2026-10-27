@@ -3,6 +3,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import {
   Coins,
   ShieldCheck,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export const AdminEscrowDeliveriesPage: React.FC = () => {
+  const toast = useToast();
   const [escrows, setEscrows] = useState<any[]>([]);
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
@@ -66,13 +68,13 @@ export const AdminEscrowDeliveriesPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message || 'Escrow released successfully.');
         fetchEscrowBoard();
       } else {
-        alert(data.message || 'Failed to release escrow.');
+        toast.error(data.message || 'Failed to release escrow.');
       }
     } catch (err) {
-      alert('Error releasing escrow.');
+      toast.error('Error releasing escrow.');
     } finally {
       setIsReleasing(null);
     }

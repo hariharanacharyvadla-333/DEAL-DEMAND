@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ToastProvider } from './context/ToastContext';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // Layouts
 import { Navbar } from './components/layout/Navbar';
@@ -46,6 +48,8 @@ import { AdminVerificationsPage } from './pages/admin/AdminVerificationsPage';
 import { AdminEscrowDeliveriesPage } from './pages/admin/AdminEscrowDeliveriesPage';
 import { AdminDisputesPage } from './pages/admin/AdminDisputesPage';
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { AdminAuditLogsPage } from './pages/admin/AdminAuditLogsPage';
 
 // Shared Pages
 import { LiveChatPage } from './pages/shared/LiveChatPage';
@@ -61,10 +65,12 @@ const PublicLayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BrowserRouter>
-          <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <SocketProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
             {/* PUBLIC PAGES */}
             <Route
               path="/"
@@ -181,17 +187,19 @@ export const App: React.FC = () => {
               <Route path="verifications" element={<AdminVerificationsPage />} />
               <Route path="escrow" element={<AdminEscrowDeliveriesPage />} />
               <Route path="disputes" element={<AdminDisputesPage />} />
-              <Route path="users" element={<AdminVerificationsPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
               <Route path="categories" element={<AdminCategoriesPage />} />
-              <Route path="audit" element={<AdminEscrowDeliveriesPage />} />
+              <Route path="audit" element={<AdminAuditLogsPage />} />
             </Route>
 
             {/* Catch-all fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+      </ToastProvider>
+    </SocketProvider>
+  </AuthProvider>
+</ErrorBoundary>
   );
 };
 

@@ -103,6 +103,19 @@ export const updateWorkerVerification = async (req: AuthRequest, res: Response) 
       },
     });
 
+    // Send in-app notification to the worker
+    await prisma.notification.create({
+      data: {
+        userId: worker.userId,
+        title: status === 'VERIFIED' ? 'Account Verified! 🛡️' : 'Verification Update',
+        message: status === 'VERIFIED'
+          ? `Congratulations! Your worker profile has been verified with badge ${badgeLevel}. You can now submit quotes.`
+          : `Your KYC verification was not approved. Note: ${adminNote || 'Please update your documents.'}`,
+        type: 'ADMIN_ALERT',
+        link: '/worker/profile',
+      },
+    });
+
     // Audit log
     if (req.user) {
       await prisma.auditLog.create({
@@ -291,7 +304,7 @@ export const getDisputes = async (_req: AuthRequest, res: Response) => {
             requirement: { select: { id: true, title: true } },
           },
         },
-        filedBy: { select: { id: true, name: true, role: true } },
+        raisedBy: { select: { id: true, name: true, role: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -314,7 +327,7 @@ export const getDeliveries = async (_req: AuthRequest, res: Response) => {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
     });
     return res.json({ success: true, deliveries });
   } catch (error: any) {
@@ -355,4 +368,202 @@ export const getFlaggedItems = async (_req: AuthRequest, res: Response) => {
     return res.status(500).json({ success: false, message: 'Failed to fetch flagged items.' });
   }
 };
+
+// GET /api/admin/users - User Management (Filter by role, search by name/email/phone)
+export const getUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    const { role, search, page = '1', limit = '50' } = req.query;
+
+    const whereClause: any = {};
+
+    if (role && role !== 'ALL') {
+      whereClause.role = String(role).toUpperCase();
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      const q = search.trim();
+      whereClause.OR = [
+        { name: { contains: q } },
+        { email: { contains: q } },
+        { phone: { contains: q } },
+        { city: { contains: q } },
+      ];
+    }
+
+    const take = Math.min(Number(limit) || 50, 100);
+    const skip = (Math.max(Number(page) || 1, 1) - 1) * take;
+
+    const [users, totalCount] = await Promise.all([
+      prisma.user.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          city: true,
+          isBlocked: true,
+          avatarUrl: true,
+          createdAt: true,
+          workerProfile: {
+            select: {
+              id: true,
+              verificationState: true,
+              badgeLevel: true,
+              rating: true,
+              jobsCompleted: true,
+              yearsExperience: true,
+              serviceArea: true,
+            },
+          },
+          _count: {
+            select: {
+              requirements: true,
+              customerOrders: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      prisma.user.count({ where: whereClause }),
+    ]);
+
+    return res.json({
+      success: true,
+      users,
+      totalCount,
+      page: Number(page) || 1,
+      totalPages: Math.ceil(totalCount / take),
+    });
+  } catch (error: any) {
+    console.error('getUsers error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch users.' });
+  }
+};
+
+// PUT /api/admin/users/:id/block - Block or unblock a user
+export const toggleBlockUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isBlocked, reason } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    if (user.role === 'ADMIN') {
+      return res.status(400).json({ success: false, message: 'Cannot block platform administrator accounts.' });
+    }
+
+    const nextBlockedState = typeof isBlocked === 'boolean' ? isBlocked : !user.isBlocked;
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { isBlocked: nextBlockedState },
+    });
+
+    if (req.user) {
+      await prisma.auditLog.create({
+        data: {
+          adminId: req.user.userId,
+          action: nextBlockedState ? 'USER_BLOCKED' : 'USER_UNBLOCKED',
+          targetId: id,
+          details: `User ${user.name} (${user.email}, ${user.role}) was ${nextBlockedState ? 'BLOCKED' : 'UNBLOCKED'}. Reason: ${reason || 'Admin console action.'}`,
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `User ${user.name} has been ${nextBlockedState ? 'blocked' : 'unblocked'}.`,
+      user: {
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        role: updated.role,
+        isBlocked: updated.isBlocked,
+      },
+    });
+  } catch (error: any) {
+    console.error('toggleBlockUser error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update user block status.' });
+  }
+};
+
+// GET /api/admin/audit-logs - Fetch platform audit trail
+export const getAuditLogs = async (_req: AuthRequest, res: Response) => {
+  try {
+    const logs = await prisma.auditLog.findMany({
+      include: {
+        admin: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    return res.json({ success: true, logs });
+  } catch (error: any) {
+    console.error('getAuditLogs error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch audit logs.' });
+  }
+};
+
+// GET /api/admin/orders/:orderId/chat - Read-only chat transcript for Admin dispute adjudication
+export const getOrderChatTranscript = async (req: AuthRequest, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        customer: { select: { id: true, name: true, email: true } },
+        worker: { include: { user: { select: { id: true, name: true, email: true } } } },
+        requirement: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    // Find the Chat between customer and worker for this requirement
+    const chat = await prisma.chat.findFirst({
+      where: {
+        customerId: order.customerId,
+        workerId: order.workerId,
+        requirementId: order.requirementId,
+      },
+      include: {
+        messages: {
+          include: {
+            sender: { select: { id: true, name: true, role: true, avatarUrl: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    return res.json({
+      success: true,
+      order: {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        customer: order.customer,
+        worker: order.worker,
+      },
+      chat: chat || null,
+      messages: chat?.messages || [],
+    });
+  } catch (error: any) {
+    console.error('getOrderChatTranscript error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch dispute chat transcript.' });
+  }
+};
+
 

@@ -6,6 +6,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Select } from '../../components/ui/Select';
 import { Input } from '../../components/ui/Input';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import {
   UserCheck2,
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 export const AdminVerificationsPage: React.FC = () => {
+  const toast = useToast();
   const [queue, setQueue] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,13 +71,14 @@ export const AdminVerificationsPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success(`Artisan ${status === 'VERIFIED' ? 'verified successfully' : 'verification rejected'}.`);
         setReviewModalOpen(false);
         fetchQueue();
       } else {
-        alert(data.message || 'Failed to update verification status.');
+        toast.error(data.message || 'Failed to update verification status.');
       }
     } catch (err) {
-      alert('Error updating status.');
+      toast.error('Error updating status.');
     } finally {
       setIsUpdating(false);
     }

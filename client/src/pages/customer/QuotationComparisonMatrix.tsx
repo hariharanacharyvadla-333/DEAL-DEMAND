@@ -7,6 +7,7 @@ import { RatingStars } from '../../components/ui/RatingStars';
 import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import {
   Sparkles,
   ShieldCheck,
@@ -23,6 +24,7 @@ import {
 export const QuotationComparisonMatrix: React.FC = () => {
   const { id: dealId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [deal, setDeal] = useState<any>(null);
   const [quotations, setQuotations] = useState<any[]>([]);
@@ -102,12 +104,13 @@ export const QuotationComparisonMatrix: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Quotation accepted! Funds placed into secure escrow.');
         navigate(`/customer/orders/${data.order.id}`);
       } else {
-        alert(data.message || 'Failed to accept quotation.');
+        toast.error(data.message || 'Failed to accept quotation.');
       }
     } catch (err) {
-      alert('Error accepting quotation.');
+      toast.error('Error accepting quotation.');
     } finally {
       setIsAccepting(false);
     }
@@ -135,15 +138,16 @@ export const QuotationComparisonMatrix: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Counter offer sent to artisan.');
         setQuotations((prev) =>
           prev.map((q) => (q.id === selectedQuoteForNeg.id ? { ...q, status: 'NEGOTIATING', counterPrice: Number(counterPrice) } : q))
         );
         setNegotiateModalOpen(false);
       } else {
-        alert(data.message || 'Failed to send counter offer.');
+        toast.error(data.message || 'Failed to send counter offer.');
       }
     } catch (err) {
-      alert('Error sending negotiation.');
+      toast.error('Error sending negotiation.');
     } finally {
       setIsNegotiating(false);
     }
@@ -382,7 +386,7 @@ export const QuotationComparisonMatrix: React.FC = () => {
                       >
                         Negotiate
                       </Button>
-                      <Link to={`/customer/chat`} className="flex-1">
+                      <Link to={`/customer/chat?dealId=${deal?.id || dealId}&workerId=${q.workerId}`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full justify-center text-xs" icon={<MessageSquare className="w-3.5 h-3.5" />}>
                           Chat
                         </Button>

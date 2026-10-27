@@ -82,6 +82,24 @@ export const submitQuotation = async (req: AuthRequest, res: Response) => {
     // Notify customer
     const requirement = await prisma.requirement.findUnique({ where: { id: requirementId } });
     if (requirement) {
+      // Ensure chat exists between customer and worker
+      const existingChat = await prisma.chat.findFirst({
+        where: {
+          customerId: requirement.customerId,
+          workerId: workerProfile.id,
+          requirementId,
+        },
+      });
+      if (!existingChat) {
+        await prisma.chat.create({
+          data: {
+            customerId: requirement.customerId,
+            workerId: workerProfile.id,
+            requirementId,
+          },
+        });
+      }
+
       await prisma.notification.create({
         data: {
           userId: requirement.customerId,
@@ -246,6 +264,57 @@ export const acceptQuotation = async (req: AuthRequest, res: Response) => {
         link: `/worker/projects/${order.id}`,
       },
     });
+
+    // Ensure Chat exists and post post-acceptance system message
+    try {
+      let chat = await prisma.chat.findFirst({
+        where: {
+          customerId: quotation.requirement.customerId,
+          workerId: quotation.workerId,
+          requirementId: quotation.requirementId,
+        },
+      });
+
+      if (!chat) {
+        chat = await prisma.chat.create({
+          data: {
+            customerId: quotation.requirement.customerId,
+            workerId: quotation.workerId,
+            requirementId: quotation.requirementId,
+          },
+        });
+      }
+
+      const systemMsg = await prisma.message.create({
+        data: {
+          chatId: chat.id,
+          senderId: quotation.requirement.customerId,
+          text: `Quotation of ₹${totalAmount.toLocaleString()} accepted. Work can begin.`,
+          isMasked: false,
+        },
+        include: {
+          sender: { select: { id: true, name: true, role: true, avatarUrl: true } },
+        },
+      });
+
+      await prisma.chat.update({
+        where: { id: chat.id },
+        data: { updatedAt: new Date() },
+      });
+
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`chat:${chat.id}`).emit('new_message', systemMsg);
+        io.to(`conversation:${chat.id}`).emit('new_message', systemMsg);
+        io.to(`user:${quotation.worker.userId}`).emit('chat_notification', {
+          chatId: chat.id,
+          senderName: 'Platform Escrow',
+          message: systemMsg,
+        });
+      }
+    } catch (chatErr) {
+      console.error('Error posting acceptance system chat message:', chatErr);
+    }
 
     return res.json({
       success: true,

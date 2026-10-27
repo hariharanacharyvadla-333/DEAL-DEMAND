@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import {
   Wrench,
   Camera,
@@ -14,9 +16,11 @@ import {
   Upload,
   Coins,
   Check,
+  MessageSquare,
 } from 'lucide-react';
 
 export const WorkerProjectsPage: React.FC = () => {
+  const toast = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -80,13 +84,14 @@ export const WorkerProjectsPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Milestone proof submitted for customer inspection.');
         setUploadModalOpen(false);
         fetchWorkerProjects();
       } else {
-        alert(data.message || 'Failed to update progress.');
+        toast.error(data.message || 'Failed to update progress.');
       }
     } catch (err) {
-      alert('Error updating milestone progress.');
+      toast.error('Error updating milestone progress.');
     } finally {
       setIsUpdating(false);
     }
@@ -135,14 +140,22 @@ export const WorkerProjectsPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="md:text-right">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase">Your Net Payout</span>
-                  <p className="font-mono text-2xl font-black text-black">
-                    ₹{ord.workerNetPay.toLocaleString()}
-                  </p>
-                  <span className="text-[11px] font-mono text-[#10B981]">
-                    5% platform fee deducted
-                  </span>
+                <div className="flex flex-col md:items-end justify-between gap-2">
+                  <div className="md:text-right">
+                    <span className="text-[10px] font-mono text-neutral-400 uppercase">Your Net Payout</span>
+                    <p className="font-mono text-2xl font-black text-black">
+                      ₹{ord.workerNetPay.toLocaleString()}
+                    </p>
+                    <span className="text-[11px] font-mono text-[#10B981]">
+                      5% platform fee deducted
+                    </span>
+                  </div>
+
+                  <Link to={`/worker/chat?dealId=${ord.requirementId}&customerId=${ord.customerId}`}>
+                    <Button variant="outline" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
+                      Chat with Client
+                    </Button>
+                  </Link>
                 </div>
               </div>
 

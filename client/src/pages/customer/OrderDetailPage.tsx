@@ -238,7 +238,7 @@ export const OrderDetailPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link to="/customer/chat">
+            <Link to={`/customer/chat?dealId=${order.requirementId}&workerId=${order.workerId}`}>
               <Button variant="outline" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
                 Live Chat
               </Button>

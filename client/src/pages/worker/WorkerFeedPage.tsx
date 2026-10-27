@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowRight,
   Filter,
+  MessageSquare,
 } from 'lucide-react';
 
 export const WorkerFeedPage: React.FC = () => {
@@ -177,11 +178,18 @@ export const WorkerFeedPage: React.FC = () => {
                     ₹{deal.minBudget.toLocaleString()} - ₹{deal.maxBudget.toLocaleString()}
                   </p>
 
-                  <Link to={`/worker/deals/${deal.id}/quote`}>
-                    <Button variant="orange" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
-                      Submit Quotation
-                    </Button>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link to={`/worker/chat?dealId=${deal.id}&customerId=${deal.customerId}`}>
+                      <Button variant="outline" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
+                        Message
+                      </Button>
+                    </Link>
+                    <Link to={`/worker/deals/${deal.id}/quote`}>
+                      <Button variant="orange" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
+                        Quote
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </Card>
             );
