@@ -56,6 +56,7 @@ export interface User {
   avatarUrl?: string;
   city?: string;
   isBlocked: boolean;
+  preferredLanguage?: string;
   createdAt: string;
   workerProfile?: WorkerProfile;
 }

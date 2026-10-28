@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { RatingStars } from '../../components/ui/RatingStars';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 import {
   Wallet,
   Compass,
@@ -29,6 +31,7 @@ import {
 } from 'recharts';
 
 export const WorkerDashboard: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const worker = user?.workerProfile;
 
@@ -74,20 +77,20 @@ export const WorkerDashboard: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-dot text-2xl sm:text-3xl font-black text-[#0A0A0A] tracking-tight">
-              ARTISAN WORKBENCH: {user?.name ? user.name.toUpperCase() : 'ARTISAN'}
+              {t('worker.dashboardTitle', 'ARTISAN WORKBENCH')}: {user?.name ? user.name.toUpperCase() : 'ARTISAN'}
             </h1>
             {worker?.verificationState === 'VERIFIED' && (
               <ShieldCheck className="w-5 h-5 text-[#10B981]" />
             )}
           </div>
           <p className="text-sm font-mono text-[#4A4A4A] mt-1 font-medium">
-            {worker?.categories?.[0]?.category?.name || 'Skilled Professional'} • {worker?.serviceArea} • Badge: {worker?.badgeLevel || 'BASIC'}
+            {worker?.categories?.[0]?.category?.name || 'Skilled Professional'} • {worker?.serviceArea} • {t('common.escrowSecured', 'Escrow Protected Payouts')}
           </p>
         </div>
 
         <Link to="/worker/feed">
           <Button variant="orange" size="md" icon={<Compass className="w-4 h-4" />}>
-            Browse Available Deals
+            {t('worker.availableDeals', 'Browse Available Deals')}
           </Button>
         </Link>
       </div>
@@ -118,11 +121,11 @@ export const WorkerDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Available Wallet</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('worker.walletBalance', 'Available Wallet')}</span>
             <Wallet className="w-4 h-4 text-[#FF5A1F]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            ₹{(worker?.walletBalance || 0).toLocaleString()}
+            {formatCurrency(worker?.walletBalance || 0, i18n.language)}
           </p>
           <span className="text-sm font-semibold text-[#10B981] mt-1.5 block">
             Ready for instant bank/UPI withdrawal
@@ -131,11 +134,11 @@ export const WorkerDashboard: React.FC = () => {
 
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Pending Escrow</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('worker.pendingEscrow', 'Pending Escrow')}</span>
             <Coins className="w-4 h-4 text-amber-500" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            ₹{(worker?.pendingEscrow || 0).toLocaleString()}
+            {formatCurrency(worker?.pendingEscrow || 0, i18n.language)}
           </p>
           <span className="text-sm text-[#4A4A4A] mt-1.5 block">
             Secured in ongoing milestone jobs
@@ -144,14 +147,14 @@ export const WorkerDashboard: React.FC = () => {
 
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Active Quotes</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('nav.myQuotes', 'Active Quotes')}</span>
             <FileText className="w-4 h-4 text-[#0A0A0A]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            {pendingQuotes.length}
+            {formatNumber(pendingQuotes.length, i18n.language)}
           </p>
           <span className="text-sm text-[#4A4A4A] mt-1.5 block font-medium">
-            {wonQuotes.length} won contracts
+            {formatNumber(wonQuotes.length, i18n.language)} won contracts
           </span>
         </Card>
 

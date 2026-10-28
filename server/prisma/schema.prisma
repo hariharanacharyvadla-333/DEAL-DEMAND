@@ -17,6 +17,7 @@ model User {
   avatarUrl       String?
   city            String?
   isBlocked       Boolean        @default(false)
+  preferredLanguage String       @default("en")
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import {
   LayoutDashboard,
   Compass,
@@ -17,6 +19,7 @@ import {
 } from 'lucide-react';
 
 export const WorkerLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { socket } = useSocket();
   const toast = useToast();
@@ -64,13 +67,13 @@ export const WorkerLayout: React.FC = () => {
   const worker = user?.workerProfile;
 
   const navItems = [
-    { label: 'Dashboard', path: '/worker/dashboard', icon: LayoutDashboard },
-    { label: 'Browse Deals', path: '/worker/feed', icon: Compass, highlight: true },
-    { label: 'My Quotations', path: '/worker/quotes', icon: FileText },
-    { label: 'Active Projects', path: '/worker/projects', icon: Wrench },
-    { label: 'Earnings & Escrow', path: '/worker/earnings', icon: Wallet },
-    { label: 'Profile & KYC', path: '/worker/profile', icon: UserCheck },
-    { label: 'Live Chat', path: '/worker/chat', icon: MessageSquare },
+    { label: t('nav.dashboard'), path: '/worker/dashboard', icon: LayoutDashboard },
+    { label: t('nav.browseDeals'), path: '/worker/feed', icon: Compass, highlight: true },
+    { label: t('nav.myQuotes'), path: '/worker/quotes', icon: FileText },
+    { label: t('nav.activeProjects'), path: '/worker/projects', icon: Wrench },
+    { label: t('nav.earnings'), path: '/worker/earnings', icon: Wallet },
+    { label: t('nav.profile'), path: '/worker/profile', icon: UserCheck },
+    { label: t('nav.liveChat'), path: '/worker/chat', icon: MessageSquare },
   ];
 
   return (
@@ -160,10 +163,11 @@ export const WorkerLayout: React.FC = () => {
             <span className="text-[#0A0A0A] uppercase font-bold">{location.pathname.split('/')[2] || 'Dashboard'}</span>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher size="sm" />
             <Link to="/worker/feed">
               <button className="bg-[#0A0A0A] text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-neutral-800 flex items-center gap-1.5 shadow-xs transition-all">
                 <Compass className="w-3.5 h-3.5 text-[#FF5A1F]" />
-                Browse Work
+                {t('nav.browseDeals')}
               </button>
             </Link>
           </div>

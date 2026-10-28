@@ -21,6 +21,7 @@ import { RegisterPage } from './pages/public/RegisterPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { CommissionPage } from './pages/public/CommissionPage';
 import { ContactPage } from './pages/public/ContactPage';
+import { NotFoundPage } from './pages/public/NotFoundPage';
 
 // Customer Pages
 import { CustomerDashboard } from './pages/customer/CustomerDashboard';
@@ -192,8 +193,15 @@ export const App: React.FC = () => {
               <Route path="audit" element={<AdminAuditLogsPage />} />
             </Route>
 
-            {/* Catch-all fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Catch-all 404 page */}
+            <Route
+              path="*"
+              element={
+                <PublicLayoutWrapper>
+                  <NotFoundPage />
+                </PublicLayoutWrapper>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

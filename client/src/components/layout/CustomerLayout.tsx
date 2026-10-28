@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react';
 
 export const CustomerLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { socket } = useSocket();
   const toast = useToast();
@@ -65,14 +68,14 @@ export const CustomerLayout: React.FC = () => {
   }, [socket, location.pathname]);
 
   const navItems = [
-    { label: 'Dashboard', path: '/customer/dashboard', icon: LayoutDashboard },
-    { label: 'Post a Deal', path: '/customer/deals/new', icon: PlusCircle, highlight: true },
-    { label: 'My Deals', path: '/customer/deals', icon: FolderKanban },
-    { label: 'Browse Feed', path: '/customer/deals/feed', icon: Search },
-    { label: 'Find Workers', path: '/customer/workers', icon: Users },
-    { label: 'Projects & Orders', path: '/customer/orders', icon: PackageCheck },
-    { label: 'Live Chat', path: '/customer/chat', icon: MessageSquare },
-    { label: 'Escrow Wallet', path: '/customer/wallet', icon: Wallet },
+    { label: t('nav.dashboard'), path: '/customer/dashboard', icon: LayoutDashboard },
+    { label: t('nav.postADeal'), path: '/customer/deals/new', icon: PlusCircle, highlight: true },
+    { label: t('nav.myDeals'), path: '/customer/deals', icon: FolderKanban },
+    { label: t('nav.browseDeals'), path: '/customer/deals/feed', icon: Search },
+    { label: t('nav.findWorkers'), path: '/customer/workers', icon: Users },
+    { label: t('nav.orders'), path: '/customer/orders', icon: PackageCheck },
+    { label: t('nav.liveChat'), path: '/customer/chat', icon: MessageSquare },
+    { label: t('nav.escrowWallet'), path: '/customer/wallet', icon: Wallet },
   ];
 
   return (
@@ -157,10 +160,11 @@ export const CustomerLayout: React.FC = () => {
             <span className="text-[#0A0A0A] uppercase font-bold">{location.pathname.split('/')[2] || 'Dashboard'}</span>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher size="sm" />
             <Link to="/customer/deals/new">
               <button className="bg-[#FF5A1F] text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-[#E04810] flex items-center gap-1.5 shadow-xs transition-all">
                 <PlusCircle className="w-3.5 h-3.5" />
-                Post New Deal
+                {t('nav.postADeal')}
               </button>
             </Link>
           </div>

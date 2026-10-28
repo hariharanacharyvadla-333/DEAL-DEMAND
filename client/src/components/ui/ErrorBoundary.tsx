@@ -38,28 +38,23 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[400px] flex items-center justify-center p-6 bg-white">
-          <div className="max-w-md w-full bg-white border border-[#D9D9D9] p-8 text-center shadow-sm">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-white hero-dot-grid">
+          <div className="max-w-md w-full bg-white border border-[#D9D9D9] p-8 sm:p-10 text-center shadow-xs rounded-nothing">
             <div className="w-12 h-12 bg-red-50 text-[#EF4444] rounded-full flex items-center justify-center mx-auto mb-4 border border-red-200">
               <ShieldAlert className="w-6 h-6" />
             </div>
-            <h2 className="font-dot text-xl font-bold text-[#0A0A0A] tracking-tight mb-2">
-              Something went wrong
+            <h2 className="font-dot text-2xl font-black text-[#0A0A0A] tracking-tight mb-2">
+              SOMETHING WENT WRONG
             </h2>
-            <p className="text-xs text-[#4A4A4A] mb-6 leading-relaxed">
-              An unexpected error occurred while rendering this interface. Your data and escrow contracts remain safe.
+            <p className="text-sm text-[#4A4A4A] mb-6 leading-relaxed">
+              An unexpected system error occurred while rendering this interface. Your account data and escrow contracts remain completely safe.
             </p>
-            {this.state.error?.message && (
-              <p className="text-[11px] font-mono bg-neutral-100 p-2.5 rounded-none text-neutral-600 mb-6 text-left overflow-x-auto">
-                {this.state.error.message}
-              </p>
-            )}
             <Button
               variant="orange"
-              size="sm"
-              icon={<RotateCcw className="w-3.5 h-3.5" />}
+              size="md"
+              icon={<RotateCcw className="w-4 h-4" />}
               onClick={this.handleReset}
-              className="w-full"
+              className="w-full justify-center font-semibold"
             >
               Reload Page
             </Button>

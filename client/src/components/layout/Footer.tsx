@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-[#F7F7F7] text-[#0A0A0A] border-t border-[#E5E5E5] pt-16 pb-12 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,10 +36,10 @@ export const Footer: React.FC = () => {
               Marketplace
             </h4>
             <ul className="space-y-3 text-sm text-[#4A4A4A]">
-              <li><Link to="/customer/deals/feed" className="hover:text-[#0A0A0A] font-medium transition-colors">Browse Requirements</Link></li>
-              <li><Link to="/customer/workers" className="hover:text-[#0A0A0A] font-medium transition-colors">Verified Professionals</Link></li>
-              <li><Link to="/customer/deals/new" className="hover:text-[#0A0A0A] font-medium transition-colors">Post a Deal</Link></li>
-              <li><Link to="/commission" className="hover:text-[#0A0A0A] font-medium transition-colors">Pricing & Commission</Link></li>
+              <li><Link to="/customer/deals/feed" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.browseRequirements')}</Link></li>
+              <li><Link to="/customer/workers" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.findProfessionals')}</Link></li>
+              <li><Link to="/customer/deals/new" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.postADeal')}</Link></li>
+              <li><Link to="/commission" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.fairCommission')}</Link></li>
             </ul>
           </div>
 
@@ -47,10 +49,10 @@ export const Footer: React.FC = () => {
               Portals
             </h4>
             <ul className="space-y-3 text-sm text-[#4A4A4A]">
-              <li><Link to="/login?role=customer" className="hover:text-[#0A0A0A] font-medium transition-colors">Customer Portal</Link></li>
-              <li><Link to="/login?role=worker" className="hover:text-[#0A0A0A] font-medium transition-colors">Worker Partner Portal</Link></li>
-              <li><Link to="/portal-select" className="hover:text-[#0A0A0A] font-medium transition-colors">Select Access Portal</Link></li>
-              <li><Link to="/about" className="hover:text-[#0A0A0A] font-medium transition-colors">How Escrow Works</Link></li>
+              <li><Link to="/login?role=customer" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.customerPortal')}</Link></li>
+              <li><Link to="/login?role=worker" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.workerPortal')}</Link></li>
+              <li><Link to="/portal-select" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('auth.selectRole')}</Link></li>
+              <li><Link to="/about" className="hover:text-[#0A0A0A] font-medium transition-colors">{t('nav.howItWorks')}</Link></li>
             </ul>
           </div>
 

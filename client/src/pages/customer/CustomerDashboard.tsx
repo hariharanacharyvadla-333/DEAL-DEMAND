@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { RatingStars } from '../../components/ui/RatingStars';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 import {
   PlusCircle,
   FolderKanban,
@@ -20,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export const CustomerDashboard: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [deals, setDeals] = useState<any[]>([]);
   const [recommendedWorkers, setRecommendedWorkers] = useState<any[]>([]);
@@ -65,18 +68,18 @@ export const CustomerDashboard: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-dot text-2xl sm:text-3xl font-black text-[#0A0A0A] tracking-tight">
-              WELCOME BACK, {user?.name ? user.name.toUpperCase() : 'CUSTOMER'}
+              {t('customer.dashboardTitle', 'CUSTOMER COMMAND CENTER')}
             </h1>
             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
           </div>
           <p className="text-sm font-mono text-[#4A4A4A] mt-1 font-medium">
-            Customer Workspace • {user?.city || 'Bengaluru, India'} • All payments escrow protected
+            {user?.name || 'Customer'} • {user?.city || 'Bengaluru, India'} • {t('common.escrowSecured', 'Escrow Secured')}
           </p>
         </div>
 
         <Link to="/customer/deals/new" className="shrink-0">
           <Button variant="orange" size="md" icon={<PlusCircle className="w-4 h-4" />}>
-            Post a New Deal
+            {t('customer.postNewDeal', 'Post a New Deal')}
           </Button>
         </Link>
       </div>
@@ -85,44 +88,44 @@ export const CustomerDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Active Deals</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('customer.activeRequirements', 'Active Deals')}</span>
             <FolderKanban className="w-4 h-4 text-[#FF5A1F]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            {activeDeals.length}
+            {formatNumber(activeDeals.length, i18n.language)}
           </p>
           <span className="text-sm text-[#4A4A4A] mt-1.5 block font-medium">Live in marketplace</span>
         </Card>
 
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Quotes Received</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('customer.totalQuotations', 'Quotes Received')}</span>
             <FileText className="w-4 h-4 text-[#0A0A0A]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            {totalQuotations}
+            {formatNumber(totalQuotations, i18n.language)}
           </p>
           <span className="text-sm text-[#4A4A4A] mt-1.5 block font-medium">Awaiting comparison</span>
         </Card>
 
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">In Progress</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('common.inProgress', 'In Progress')}</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            {ongoingProjects.length}
+            {formatNumber(ongoingProjects.length, i18n.language)}
           </p>
           <span className="text-sm text-[#4A4A4A] mt-1.5 block font-medium">Milestones active</span>
         </Card>
 
         <Card className="p-5 bg-white border border-[#D9D9D9] shadow-xs rounded-nothing">
           <div className="flex items-center justify-between text-[#4A4A4A] mb-2">
-            <span className="font-mono text-xs font-semibold uppercase">Escrow Held</span>
+            <span className="font-mono text-xs font-semibold uppercase">{t('customer.fundsInEscrow', 'Escrow Held')}</span>
             <Coins className="w-4 h-4 text-[#10B981]" />
           </div>
           <p className="font-sans text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
-            ₹{(totalEscrowHeld || 0).toLocaleString()}
+            {formatCurrency(totalEscrowHeld || 0, i18n.language)}
           </p>
           <span className="text-sm font-semibold text-[#10B981] mt-1.5 block">100% Protected</span>
         </Card>
@@ -132,10 +135,10 @@ export const CustomerDashboard: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-dot text-lg sm:text-xl font-bold text-[#0A0A0A] tracking-tight">
-            YOUR ACTIVE REQUIREMENTS
+            {t('customer.activeRequirements', 'YOUR ACTIVE REQUIREMENTS')}
           </h2>
           <Link to="/customer/deals" className="text-xs sm:text-sm font-mono text-[#4A4A4A] hover:text-[#0A0A0A] flex items-center gap-1 font-semibold">
-            View All <ChevronRight className="w-3.5 h-3.5" />
+            {t('common.view', 'View All')} <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -147,14 +150,14 @@ export const CustomerDashboard: React.FC = () => {
         ) : deals.length === 0 ? (
           <Card className="p-10 text-center bg-white border border-dashed border-[#D9D9D9] shadow-xs rounded-nothing flex flex-col items-center justify-center">
             <FolderKanban className="w-10 h-10 text-[#FF5A1F] mb-3" />
-            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">You haven't posted any requirements yet</h3>
+            <h3 className="text-base font-bold text-[#0A0A0A] mb-1">{t('customer.noDealsYet', "You haven't posted any requirements yet")}</h3>
             <p className="text-sm text-[#4A4A4A] max-w-md mx-auto mb-5 leading-relaxed font-normal">
-              Post your first physical craft or local service requirement to start receiving competitive itemized quotations from verified artisans.
+              {t('customer.postYourFirstDeal', 'Post your first physical craft or local service requirement to start receiving competitive itemized quotations from verified artisans.')}
             </p>
             <div className="flex justify-center">
               <Link to="/customer/deals/new">
                 <Button variant="orange" size="md" icon={<PlusCircle className="w-4 h-4" />}>
-                  Post Your First Deal
+                  {t('customer.postNewDeal', 'Post Your First Deal')}
                 </Button>
               </Link>
             </div>

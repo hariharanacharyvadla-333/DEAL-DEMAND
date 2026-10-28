@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { StatusDot } from '../../components/ui/StatusDot';
 import { RatingStars } from '../../components/ui/RatingStars';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 import {
   Sparkles,
   ShieldCheck,
@@ -16,6 +18,7 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [categories, setCategories] = useState<any[]>([]);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [stats, setStats] = useState({
@@ -53,27 +56,27 @@ export const LandingPage: React.FC = () => {
   }, []);
 
   const statsList = [
-    { label: 'Active Requirements', value: stats.activeDeals.toString() },
-    { label: 'Verified Artisans', value: stats.verifiedWorkers.toString() },
-    { label: 'Completed Deals', value: stats.completedDeals.toString() },
-    { label: 'Escrow Protected', value: `₹${stats.escrowVolume.toLocaleString()}` },
+    { label: t('landing.activeDealsCount', 'Active Requirements'), value: formatNumber(stats.activeDeals, i18n.language) },
+    { label: t('landing.verifiedWorkersCount', 'Verified Artisans'), value: formatNumber(stats.verifiedWorkers, i18n.language) },
+    { label: t('landing.completedDealsCount', 'Completed Deals'), value: formatNumber(stats.completedDeals, i18n.language) },
+    { label: t('landing.escrowProtected', 'Escrow Protected'), value: formatCurrency(stats.escrowVolume, i18n.language) },
   ];
 
   const steps = [
     {
       num: '01',
-      title: 'Post Your Requirement',
-      desc: 'Describe what you need crafted, fixed or built. Our AI turns your keywords into detailed specs, material recommendations and fair price estimates.',
+      title: t('landing.step1Title', 'Post Dimensions & Specs'),
+      desc: t('landing.step1Desc', 'Describe what you need crafted, fixed or built. Our AI turns your keywords into detailed specs, material recommendations and fair price estimates.'),
     },
     {
       num: '02',
-      title: 'Compare Itemized Quotations',
-      desc: 'Local verified professionals submit proposals with transparent breakdowns of material grades, skilled labour, transit and warranties.',
+      title: t('landing.step2Title', 'Compare Itemized Quotations'),
+      desc: t('landing.step2Desc', 'Local verified professionals submit proposals with transparent breakdowns of material grades, skilled labour, transit and warranties.'),
     },
     {
       num: '03',
-      title: 'Escrow-Secured Completion',
-      desc: 'Funds are securely locked in platform escrow. Money is released milestone-by-milestone only when you inspect the craft and approve the results.',
+      title: t('landing.step3Title', 'Milestone Escrow Protection'),
+      desc: t('landing.step3Desc', 'Funds are securely locked in platform escrow. Money is released milestone-by-milestone only when you inspect the craft and approve the results.'),
     },
   ];
 
@@ -130,19 +133,19 @@ export const LandingPage: React.FC = () => {
           </h1>
 
           <p className="text-base sm:text-[18px] text-[#4A4A4A] max-w-2xl mx-auto mb-10 font-normal leading-relaxed text-center px-4">
-            Connect directly with verified carpenters, fabricators, painters, and skilled tradesmen. Compare itemized quotations, lock funds in escrow, and get work done with total peace of mind.
+            {t('landing.heroSubtitle', 'Custom wooden furniture, metal fabrication, masonry and renovations with milestone payments held in platform trust custody.')}
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/customer/deals/new">
               <Button variant="orange" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                Post a Deal with AI Assistant
+                {t('landing.postRequirementBtn', 'Post a Requirement')}
               </Button>
             </Link>
             <Link to="/portal-select">
               <button className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold rounded-full bg-white text-[#0A0A0A] border border-[#0A0A0A] hover:bg-neutral-50 transition-all shadow-xs focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                <span>Select Access Portal</span>
+                <span>{t('auth.selectRole', 'Select Your Portal')}</span>
                 <ArrowRight className="w-5 h-5 text-[#0A0A0A]" />
               </button>
             </Link>
@@ -405,12 +408,12 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/customer/deals/new">
               <Button variant="orange" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                Post a Deal with AI Assistant
+                {t('landing.postRequirementBtn', 'Post a Requirement')}
               </Button>
             </Link>
             <Link to="/portal-select">
               <button className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold rounded-full bg-white text-[#0A0A0A] border border-[#0A0A0A] hover:bg-neutral-50 transition-all shadow-xs focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                <span>Select Access Portal</span>
+                <span>{t('auth.selectRole', 'Select Your Portal')}</span>
                 <ArrowRight className="w-5 h-5 text-[#0A0A0A]" />
               </button>
             </Link>

@@ -21,8 +21,10 @@ import {
   Truck,
   Check,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const OrderDetailPage: React.FC = () => {
+  const toast = useToast();
   const { id } = useParams<{ id: string }>();
 
   const [order, setOrder] = useState<any>(null);
@@ -80,12 +82,13 @@ export const OrderDetailPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success('Milestone approved and escrow funds released!');
         fetchOrder();
       } else {
-        alert(data.message || 'Failed to approve milestone.');
+        toast.error(data.message || 'Failed to approve milestone.');
       }
     } catch (err) {
-      alert('Error approving milestone.');
+      toast.error('Error approving milestone.');
     } finally {
       setIsApproving(null);
     }
@@ -116,13 +119,14 @@ export const OrderDetailPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Thank you! Review published successfully.');
         setReviewModalOpen(false);
         fetchOrder();
       } else {
-        alert(data.message || 'Failed to publish review.');
+        toast.error(data.message || 'Failed to publish review.');
       }
     } catch (err) {
-      alert('Error submitting review.');
+      toast.error('Error submitting review.');
     } finally {
       setIsSubmittingReview(false);
     }
@@ -150,13 +154,14 @@ export const OrderDetailPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Dispute filed. Admin mediator has been notified.');
         setDisputeModalOpen(false);
         fetchOrder();
       } else {
-        alert(data.message || 'Failed to file dispute.');
+        toast.error(data.message || 'Failed to file dispute.');
       }
     } catch (err) {
-      alert('Error filing dispute.');
+      toast.error('Error filing dispute.');
     } finally {
       setIsSubmittingDispute(false);
     }

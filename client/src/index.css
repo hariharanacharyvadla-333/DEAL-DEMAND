@@ -48,6 +48,25 @@ body {
   font-weight: 800;
 }
 
+/* Locale-Specific Font Fallbacks for Devanagari (HI) and Malayalam (ML) */
+html[lang="hi"] {
+  font-family: 'Noto Sans Devanagari', 'Space Grotesk', -apple-system, sans-serif;
+}
+html[lang="hi"] .font-dot {
+  font-family: 'Noto Sans Devanagari', 'Doto', sans-serif;
+  letter-spacing: normal;
+  font-weight: 800;
+}
+
+html[lang="ml"] {
+  font-family: 'Noto Sans Malayalam', 'Space Grotesk', -apple-system, sans-serif;
+}
+html[lang="ml"] .font-dot {
+  font-family: 'Noto Sans Malayalam', 'Doto', sans-serif;
+  letter-spacing: normal;
+  font-weight: 800;
+}
+
 .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }

@@ -29,8 +29,10 @@ import {
   BrickWall,
   Zap,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const PostDealWizard: React.FC = () => {
+  const toast = useToast();
   const navigate = useNavigate();
 
   // Wizard State
@@ -201,6 +203,7 @@ export const PostDealWizard: React.FC = () => {
       if (data.success) {
         setCreatedDealId(data.deal.id);
         setIsSubmittedSuccess(true);
+        toast.success('Requirement posted successfully! Artisans are being notified.');
         // Trigger celebratory confetti animation
         confetti({
           particleCount: 120,
@@ -209,10 +212,10 @@ export const PostDealWizard: React.FC = () => {
           colors: ['#FF5A1F', '#0A0A0A', '#10B981'],
         });
       } else {
-        alert(data.message || 'Failed to submit deal.');
+        toast.error(data.message || 'Failed to submit deal.');
       }
     } catch (err) {
-      alert('Error submitting deal. Please verify backend connection.');
+      toast.error('Error submitting deal. Please verify backend connection.');
     } finally {
       setIsSubmitting(false);
     }

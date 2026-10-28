@@ -23,8 +23,10 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
+import { useToast } from '../../context/ToastContext';
 
 export const WorkerEarningsPage: React.FC = () => {
+  const toast = useToast();
   const { user } = useAuth();
   const worker = user?.workerProfile;
 
@@ -94,13 +96,15 @@ export const WorkerEarningsPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        setPayoutMsg(data.message || 'Payout request submitted successfully!');
+        const msg = data.message || 'Payout request submitted successfully!';
+        setPayoutMsg(msg);
+        toast.success(msg);
         setPayoutModalOpen(false);
       } else {
-        alert(data.message || 'Payout request failed.');
+        toast.error(data.message || 'Payout request failed.');
       }
     } catch (err) {
-      alert('Error requesting payout.');
+      toast.error('Error requesting payout.');
     } finally {
       setIsWithdrawing(false);
     }

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import {
   User,
   Wrench,
@@ -12,11 +14,13 @@ import {
 } from 'lucide-react';
 
 export const PortalSelectPage: React.FC = () => {
+  const { t } = useTranslation();
+
   const portals = [
     {
       role: 'CUSTOMER',
-      title: 'Customer Portal',
-      subtitle: 'Post physical deals, compare quotations side-by-side & pay securely via milestone escrow.',
+      title: t('nav.customerPortal', 'Customer Portal'),
+      subtitle: t('auth.customerRole', 'Post physical deals, compare quotations side-by-side & pay securely via milestone escrow.'),
       icon: User,
       badgeText: 'CUSTOMER',
       loginLink: '/login?role=customer',
@@ -31,8 +35,8 @@ export const PortalSelectPage: React.FC = () => {
     },
     {
       role: 'WORKER',
-      title: 'Worker Partner Portal',
-      subtitle: 'Browse real client requirements, submit transparent itemized proposals & grow your trade business.',
+      title: t('nav.workerPortal', 'Worker Partner Portal'),
+      subtitle: t('auth.workerRole', 'Browse real client requirements, submit transparent itemized proposals & grow your trade business.'),
       icon: Wrench,
       badgeText: 'WORKER PRO',
       loginLink: '/login?role=worker',
@@ -49,7 +53,7 @@ export const PortalSelectPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8 relative flex flex-col justify-center">
-      {/* Discreet Fixed Top-Left Admin Shield Icon Button */}
+      {/* Top Left Admin Shield Button */}
       <div className="fixed top-6 left-6 z-50">
         <Link
           to="/admin/login"
@@ -61,6 +65,11 @@ export const PortalSelectPage: React.FC = () => {
         </Link>
       </div>
 
+      {/* Top Right Language Switcher */}
+      <div className="fixed top-6 right-6 z-50">
+        <LanguageSwitcher size="sm" />
+      </div>
+
       <div className="max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-12">
@@ -70,7 +79,7 @@ export const PortalSelectPage: React.FC = () => {
             </span>
           </Link>
           <h1 className="font-dot text-3xl sm:text-4xl font-black text-[#0A0A0A] tracking-tight">
-            SELECT ACCESS PORTAL
+            {t('auth.selectRole', 'SELECT ACCESS PORTAL')}
           </h1>
           <p className="text-[#4A4A4A] text-sm mt-2 font-normal">
             Choose your dedicated workspace to enter the marketplace
@@ -129,7 +138,7 @@ export const PortalSelectPage: React.FC = () => {
                       size="md"
                       className="w-full justify-center text-sm font-semibold py-3"
                     >
-                      Sign In to {portal.title}
+                      {t('nav.signIn', 'Sign In')} → {portal.title}
                     </Button>
                   </Link>
 
@@ -139,7 +148,7 @@ export const PortalSelectPage: React.FC = () => {
                       size="md"
                       className="w-full justify-center text-sm font-semibold py-2.5 bg-white border-[#D9D9D9] hover:bg-neutral-50 hover:border-[#0A0A0A]"
                     >
-                      Create New Account
+                      {t('auth.signUpNow', 'Create New Account')}
                     </Button>
                   </Link>
                 </div>
@@ -150,7 +159,7 @@ export const PortalSelectPage: React.FC = () => {
 
         <div className="mt-12 text-center">
           <Link to="/" className="text-xs font-semibold text-[#4A4A4A] hover:text-[#0A0A0A] transition-colors">
-            ← Back to Deal&Demand Homepage
+            ← {t('errors.backToHome', 'Back to Deal&Demand Homepage')}
           </Link>
         </div>
       </div>

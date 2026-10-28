@@ -6,8 +6,10 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Modal } from '../../components/ui/Modal';
 import { FolderTree, Plus, Layers, Check } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const AdminCategoriesPage: React.FC = () => {
+  const toast = useToast();
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,14 +71,14 @@ export const AdminCategoriesPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert(`New dynamic field "${fieldLabel}" added to ${selectedCatForField.name}!`);
+        toast.success(`New dynamic field "${fieldLabel}" added to ${selectedCatForField.name}!`);
         setFieldModalOpen(false);
         fetchCategories();
       } else {
-        alert(data.message || 'Failed to add field.');
+        toast.error(data.message || 'Failed to add field.');
       }
     } catch (err) {
-      alert('Error creating category field.');
+      toast.error('Error creating category field.');
     } finally {
       setIsSaving(false);
     }

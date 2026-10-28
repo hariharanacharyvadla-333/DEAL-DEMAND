@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
 
@@ -11,6 +13,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,7 +71,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative">
+      {/* Top Right Language Switcher */}
+      <div className="fixed top-6 right-6 z-50">
+        <LanguageSwitcher size="sm" />
+      </div>
+
       <div className="max-w-md w-full">
         {/* Brand Header */}
         <div className="text-center mb-8">
@@ -78,16 +86,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
             </span>
           </Link>
           <h1 className="font-dot text-2xl sm:text-3xl font-black text-[#0A0A0A] tracking-tight">
-            {role === 'admin' ? 'ADMIN ESCROW LOGIN' : 'SIGN IN TO PORTAL'}
+            {role === 'admin' ? t('admin.dashboardTitle', 'ADMIN ESCROW LOGIN') : t('auth.loginTitle', 'SIGN IN TO PORTAL')}
           </h1>
           <p className="text-sm text-[#4A4A4A] mt-1.5 font-normal">
             {role === 'admin'
               ? 'Enter authorized administrator credentials to manage platform escrow'
-              : 'Access your secure marketplace workspace'}
+              : t('auth.loginSubtitle', 'Access your secure marketplace workspace')}
           </p>
         </div>
 
-        {/* Role Toggle (only show between Customer & Worker on public login, hide on admin login) */}
+        {/* Role Toggle */}
         {!isAdminRoute ? (
           <div className="flex bg-white p-1 rounded-full border border-[#D9D9D9] mb-6 text-sm font-medium shadow-xs">
             <button
@@ -100,7 +108,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
                 role === 'customer' ? 'bg-[#0A0A0A] text-[#FFFFFF] shadow-xs' : 'text-[#4A4A4A] hover:text-[#0A0A0A]'
               }`}
             >
-              Customer
+              {t('nav.customerPortal', 'Customer')}
             </button>
             <button
               type="button"
@@ -112,7 +120,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
                 role === 'worker' ? 'bg-[#FF5A1F] text-[#FFFFFF] shadow-xs' : 'text-[#4A4A4A] hover:text-[#0A0A0A]'
               }`}
             >
-              Worker Partner
+              {t('nav.workerPortal', 'Worker Partner')}
             </button>
           </div>
         ) : (
@@ -132,7 +140,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <Input
-                label="Email Address"
+                label={t('auth.email', 'Email Address')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +152,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
 
             <div>
               <Input
-                label="Password"
+                label={t('auth.password', 'Password')}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -162,16 +170,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultRole }) => {
               className="w-full justify-center text-sm font-semibold py-3 mt-2"
             >
               {role === 'admin'
-                ? 'Sign In as Administrator'
-                : `Sign In to ${role === 'worker' ? 'Worker' : 'Customer'} Portal`}
+                ? t('nav.signIn', 'Sign In as Administrator')
+                : `${t('nav.signIn', 'Sign In')} → ${role === 'worker' ? t('nav.workerPortal', 'Worker') : t('nav.customerPortal', 'Customer')}`}
             </Button>
           </form>
 
           {role !== 'admin' ? (
             <div className="mt-6 text-center text-sm text-[#4A4A4A] border-t border-[#D9D9D9] pt-5 font-normal">
-              Don't have an account?{' '}
+              {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
               <Link to={`/register?role=${role}`} className="text-[#0A0A0A] font-semibold hover:underline">
-                Create new account
+                {t('auth.signUpNow', 'Create new account')}
               </Link>
             </div>
           ) : (

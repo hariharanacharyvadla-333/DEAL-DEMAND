@@ -12,19 +12,25 @@ import {
   FileText,
   CheckCircle2,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const CustomerWalletPage: React.FC = () => {
+  const toast = useToast();
   const [couponCode, setCouponCode] = useState('');
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (couponCode.toUpperCase() === 'FIRSTDEAL') {
-      setCouponSuccess('Coupon FIRSTDEAL applied! 10% platform discount (up to ₹1,500) will be deducted at checkout.');
+      const msg = 'Coupon FIRSTDEAL applied! 10% platform discount (up to ₹1,500) will be deducted at checkout.';
+      setCouponSuccess(msg);
+      toast.success(msg);
     } else if (couponCode.toUpperCase() === 'FESTIVE2026') {
-      setCouponSuccess('Coupon FESTIVE2026 applied! 15% festive waiver credited.');
+      const msg = 'Coupon FESTIVE2026 applied! 15% festive waiver credited.';
+      setCouponSuccess(msg);
+      toast.success(msg);
     } else {
-      alert('Invalid or expired coupon code. Try FIRSTDEAL or FESTIVE2026.');
+      toast.error('Invalid or expired coupon code. Try FIRSTDEAL or FESTIVE2026.');
     }
   };
 

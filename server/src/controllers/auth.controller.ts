@@ -100,6 +100,7 @@ export const login = async (req: Request, res: Response) => {
         avatarUrl: user.avatarUrl,
         city: user.city,
         phone: user.phone,
+        preferredLanguage: user.preferredLanguage || 'en',
         workerProfile: user.workerProfile,
       },
     });
@@ -414,11 +415,39 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         phone: user.phone,
         city: user.city,
         avatarUrl: user.avatarUrl,
+        preferredLanguage: user.preferredLanguage || 'en',
         workerProfile: user.workerProfile,
       },
     });
   } catch (error: any) {
     console.error('getMe error:', error);
     return res.status(500).json({ success: false, message: 'Failed to retrieve profile.' });
+  }
+};
+
+export const updateLanguage = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    const { language } = req.body;
+    const cleanLang = typeof language === 'string' ? language.toLowerCase().trim() : '';
+    if (!['en', 'hi', 'ml'].includes(cleanLang)) {
+      return res.status(400).json({ success: false, message: 'Invalid language. Must be en, hi, or ml.' });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { preferredLanguage: cleanLang },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Language preference saved successfully.',
+      preferredLanguage: updated.preferredLanguage,
+    });
+  } catch (error: any) {
+    console.error('updateLanguage error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update language.' });
   }
 };

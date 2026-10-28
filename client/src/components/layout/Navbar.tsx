@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
-import { StatusDot } from '../ui/StatusDot';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import {
   PlusCircle,
   LogOut,
-  User as UserIcon,
-  Shield,
-  Briefcase,
   Layers,
-  Globe,
-  Bell,
   Menu,
   X,
+  Compass,
+  Users,
+  Percent,
+  HelpCircle,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout, role } = useAuth();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [lang, setLang] = useState('EN');
 
   const getPortalLink = () => {
     if (!role) return '/portal-select';
@@ -29,110 +29,122 @@ export const Navbar: React.FC = () => {
     return '/customer/dashboard';
   };
 
+  const getPortalLabel = () => {
+    if (role === 'ADMIN') return t('nav.adminPortal');
+    if (role === 'WORKER') return t('nav.workerPortal');
+    return t('nav.customerPortal');
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-[#E5E5E5]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-1 group">
-            <span className="font-dot text-2xl font-black tracking-tighter text-[#0A0A0A]">
-              Deal<span className="text-[#FF5A1F] text-3xl leading-none">&</span>Demand
+    <header className="sticky top-0 z-40 bg-white border-b border-[#E5E5E5] w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
+        {/* Brand Logo & Desktop Nav Links */}
+        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
+          <Link to="/" className="flex items-center gap-1 shrink-0 group">
+            <span className="font-dot text-xl sm:text-2xl font-black tracking-tight text-[#0A0A0A]">
+              Deal<span className="text-[#FF5A1F] text-2xl sm:text-3xl leading-none">&</span>Demand
             </span>
             <span className="inline-block w-2 h-2 rounded-full bg-[#FF5A1F] ml-0.5 animate-pulse" />
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-[#0A0A0A]">
-            <Link to="/customer/deals/feed" className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors">
-              Browse Requirements
+          {/* Desktop Nav Links (No wrap, sharp contrast) */}
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs xl:text-sm font-semibold text-[#0A0A0A] whitespace-nowrap">
+            <Link
+              to="/customer/deals/feed"
+              className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors whitespace-nowrap"
+            >
+              {t('nav.browseRequirements')}
             </Link>
-            <Link to="/customer/workers" className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors">
-              Find Professionals
+            <Link
+              to="/customer/workers"
+              className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors whitespace-nowrap"
+            >
+              {t('nav.findProfessionals')}
             </Link>
-            <Link to="/commission" className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors">
-              Fair Commission
+            <Link
+              to="/commission"
+              className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors whitespace-nowrap"
+            >
+              {t('nav.fairCommission')}
             </Link>
-            <Link to="/about" className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors">
-              How It Works
+            <Link
+              to="/about"
+              className="text-[#0A0A0A] hover:text-[#FF5A1F] transition-colors whitespace-nowrap"
+            >
+              {t('nav.howItWorks')}
             </Link>
           </nav>
         </div>
 
-        {/* Right Section Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Right Actions & Controls */}
+        <div className="hidden md:flex items-center gap-2.5 lg:gap-3 shrink-0">
           {/* Language Switcher Pill */}
-          <div className="flex items-center bg-white rounded-full p-0.5 text-xs font-mono border border-[#D9D9D9] shadow-xs">
-            {['EN', 'HI', 'ML'].map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className={`px-2 py-0.5 rounded-full transition-all ${
-                  lang === l ? 'bg-[#0A0A0A] text-white font-bold' : 'text-[#0A0A0A] hover:text-[#FF5A1F] font-semibold'
-                }`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+          <LanguageSwitcher size="sm" />
 
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Portal Switcher Button */}
-              <Link to={getPortalLink()}>
+              <Link to={getPortalLink()} className="shrink-0">
                 <Button variant="secondary" size="sm" icon={<Layers className="w-3.5 h-3.5" />}>
-                  <span className="font-mono text-xs uppercase">{role} Portal</span>
+                  <span className="font-mono text-xs uppercase whitespace-nowrap">
+                    {getPortalLabel()}
+                  </span>
                 </Button>
               </Link>
 
               {role === 'CUSTOMER' && (
-                <Link to="/customer/deals/new">
-                  <Button variant="orange" size="sm" icon={<PlusCircle className="w-4 h-4" />}>
-                    Post a Deal
+                <Link to="/customer/deals/new" className="shrink-0 hidden xl:block">
+                  <Button variant="orange" size="sm" icon={<PlusCircle className="w-3.5 h-3.5" />}>
+                    <span className="whitespace-nowrap">{t('nav.postADeal')}</span>
                   </Button>
                 </Link>
               )}
 
               {/* User Dropdown Preview */}
-              <div className="flex items-center gap-2 pl-2 border-l border-neutral-200">
+              <div className="flex items-center gap-2 pl-2 border-l border-[#E5E5E5] shrink-0">
                 <img
-                  src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                  src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'}
                   alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border border-neutral-300"
+                  className="w-8 h-8 rounded-full object-cover border border-[#D9D9D9]"
                 />
-                <div className="text-left hidden lg:block">
-                  <p className="text-xs font-semibold leading-tight text-neutral-900">{user.name}</p>
-                  <p className="text-[10px] font-mono text-neutral-400 capitalize">{user.role.toLowerCase()}</p>
+                <div className="text-left hidden 2xl:block max-w-[100px] truncate">
+                  <p className="text-xs font-bold leading-tight text-[#0A0A0A] truncate">{user.name}</p>
+                  <p className="text-[10px] font-mono text-[#4A4A4A] capitalize">{user.role.toLowerCase()}</p>
                 </div>
                 <button
                   onClick={logout}
-                  title="Logout"
-                  className="p-1.5 text-neutral-400 hover:text-alert transition-colors rounded-full hover:bg-neutral-100 ml-1"
+                  title="Sign Out"
+                  aria-label="Sign Out"
+                  className="p-1.5 text-[#4A4A4A] hover:text-red-600 transition-colors rounded-full hover:bg-neutral-100"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Link to="/portal-select">
-                <Button variant="outline" size="sm">
-                  Sign In
+                <Button variant="outline" size="sm" className="whitespace-nowrap">
+                  {t('nav.signIn')}
                 </Button>
               </Link>
               <Link to="/customer/deals/new">
-                <Button variant="primary" size="sm" icon={<PlusCircle className="w-4 h-4 text-[#FF5A1F]" />}>
-                  Post a Deal
+                <Button variant="orange" size="sm" icon={<PlusCircle className="w-3.5 h-3.5" />} className="whitespace-nowrap">
+                  {t('nav.postADeal')}
                 </Button>
               </Link>
             </div>
           )}
         </div>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Hamburger & Language Controls */}
         <div className="flex md:hidden items-center gap-2">
+          <LanguageSwitcher size="sm" />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-neutral-700 hover:text-black focus:outline-none"
+            className="p-2 text-[#0A0A0A] hover:text-[#FF5A1F] focus:outline-none"
+            aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -141,48 +153,76 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-neutral-200 px-4 pt-2 pb-6 space-y-3">
-          <Link
-            to="/customer/deals/feed"
-            className="block text-sm font-medium text-neutral-800 py-2 border-b border-neutral-100"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Browse Requirements
-          </Link>
-          <Link
-            to="/customer/workers"
-            className="block text-sm font-medium text-neutral-800 py-2 border-b border-neutral-100"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Find Professionals
-          </Link>
-          <Link
-            to="/commission"
-            className="block text-sm font-medium text-neutral-800 py-2 border-b border-neutral-100"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Commission Info
-          </Link>
-          {user ? (
-            <div className="pt-2 flex flex-col gap-2">
-              <Link to={getPortalLink()} onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="secondary" size="md" className="w-full justify-center">
-                  Go to {role} Dashboard
+        <div className="md:hidden bg-white border-b border-[#E5E5E5] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-150 shadow-md">
+          <nav className="space-y-1">
+            <Link
+              to="/customer/deals/feed"
+              className="flex items-center gap-2.5 text-sm font-semibold text-[#0A0A0A] py-2.5 border-b border-neutral-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Compass className="w-4 h-4 text-[#FF5A1F]" />
+              <span>{t('nav.browseRequirements')}</span>
+            </Link>
+            <Link
+              to="/customer/workers"
+              className="flex items-center gap-2.5 text-sm font-semibold text-[#0A0A0A] py-2.5 border-b border-neutral-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Users className="w-4 h-4 text-[#FF5A1F]" />
+              <span>{t('nav.findProfessionals')}</span>
+            </Link>
+            <Link
+              to="/commission"
+              className="flex items-center gap-2.5 text-sm font-semibold text-[#0A0A0A] py-2.5 border-b border-neutral-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Percent className="w-4 h-4 text-[#FF5A1F]" />
+              <span>{t('nav.fairCommission')}</span>
+            </Link>
+            <Link
+              to="/about"
+              className="flex items-center gap-2.5 text-sm font-semibold text-[#0A0A0A] py-2.5 border-b border-neutral-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <HelpCircle className="w-4 h-4 text-[#FF5A1F]" />
+              <span>{t('nav.howItWorks')}</span>
+            </Link>
+          </nav>
+
+          <div className="pt-2">
+            {user ? (
+              <div className="flex flex-col gap-2">
+                <Link to={getPortalLink()} onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="secondary" size="md" className="w-full justify-center">
+                    {getPortalLabel()}
+                  </Button>
+                </Link>
+                {role === 'CUSTOMER' && (
+                  <Link to="/customer/deals/new" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="orange" size="md" className="w-full justify-center" icon={<PlusCircle className="w-4 h-4" />}>
+                      {t('nav.postADeal')}
+                    </Button>
+                  </Link>
+                )}
+                <Button variant="outline" size="md" onClick={logout} className="w-full justify-center text-red-600 border-red-200">
+                  {t('nav.signOut')}
                 </Button>
-              </Link>
-              <Button variant="danger" size="md" onClick={logout} className="w-full justify-center">
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <div className="pt-2 flex flex-col gap-2">
-              <Link to="/portal-select" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" size="md" className="w-full justify-center">
-                  Sign In / Register
-                </Button>
-              </Link>
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link to="/portal-select" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" size="md" className="w-full justify-center">
+                    {t('nav.signIn')}
+                  </Button>
+                </Link>
+                <Link to="/customer/deals/new" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="orange" size="md" className="w-full justify-center" icon={<PlusCircle className="w-4 h-4" />}>
+                    {t('nav.postADeal')}
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>

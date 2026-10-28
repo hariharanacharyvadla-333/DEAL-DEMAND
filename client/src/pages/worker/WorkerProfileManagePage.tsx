@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   Clock,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const WorkerProfileManagePage: React.FC = () => {
+  const toast = useToast();
   const { user } = useAuth();
   const worker = user?.workerProfile;
 
@@ -76,12 +78,12 @@ export const WorkerProfileManagePage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
       } else {
-        alert(data.message || 'Failed to update profile.');
+        toast.error(data.message || 'Failed to update profile.');
       }
     } catch (err) {
-      alert('Error updating profile.');
+      toast.error('Error updating profile.');
     } finally {
       setIsSaving(false);
     }
@@ -108,10 +110,10 @@ export const WorkerProfileManagePage: React.FC = () => {
       const data = await res.json();
       if (data.success) {
         setPortfolioModalOpen(false);
-        alert('Portfolio project added!');
+        toast.success('Portfolio project added!');
       }
     } catch (err) {
-      alert('Failed to add portfolio item.');
+      toast.error('Failed to add portfolio item.');
     }
   };
 
@@ -136,10 +138,10 @@ export const WorkerProfileManagePage: React.FC = () => {
       const data = await res.json();
       if (data.success) {
         setKycModalOpen(false);
-        alert('KYC document submitted for verification!');
+        toast.success('KYC document submitted for verification!');
       }
     } catch (err) {
-      alert('Failed to submit KYC.');
+      toast.error('Failed to submit KYC.');
     }
   };
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import {
   ShieldAlert,
   BarChart3,
@@ -15,17 +17,18 @@ import {
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
 
   const navItems = [
-    { label: 'Overview & KPIs', path: '/admin/dashboard', icon: BarChart3 },
+    { label: t('admin.dashboardTitle'), path: '/admin/dashboard', icon: BarChart3 },
     { label: 'KYC Verifications', path: '/admin/verifications', icon: UserCheck2, highlight: true },
     { label: 'Escrow & Deliveries', path: '/admin/escrow', icon: Coins },
-    { label: 'Dispute Desk', path: '/admin/disputes', icon: Scale },
-    { label: 'User Management', path: '/admin/users', icon: Users2 },
+    { label: t('admin.openDisputes'), path: '/admin/disputes', icon: Scale },
+    { label: t('admin.userManagement'), path: '/admin/users', icon: Users2 },
     { label: 'Category & Fields', path: '/admin/categories', icon: FolderTree },
-    { label: 'Audit Trail', path: '/admin/audit', icon: FileClock },
+    { label: t('admin.auditTrail'), path: '/admin/audit', icon: FileClock },
   ];
 
   return (
@@ -105,9 +108,12 @@ export const AdminLayout: React.FC = () => {
             <ChevronRight className="w-3 h-3 text-neutral-300" />
             <span className="text-black uppercase font-bold">{location.pathname.split('/')[2] || 'Dashboard'}</span>
           </div>
-          <div className="flex items-center gap-2 font-mono text-xs text-neutral-500">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-            <span>ESCROW AUDIT LEDGER ACTIVE</span>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher size="sm" />
+            <div className="flex items-center gap-2 font-mono text-xs text-neutral-500">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+              <span>ESCROW AUDIT LEDGER ACTIVE</span>
+            </div>
           </div>
         </header>
 

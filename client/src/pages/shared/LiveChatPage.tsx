@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
@@ -48,6 +49,7 @@ interface ChatMessage {
 }
 
 export const LiveChatPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { socket, isConnected, joinChat, leaveChat, sendTyping } = useSocket();
   const toast = useToast();
@@ -480,7 +482,7 @@ export const LiveChatPage: React.FC = () => {
         {/* Header */}
         <div className="p-4 border-b border-[#D9D9D9] flex items-center justify-between">
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0A0A0A]">
-            CONVERSATIONS ({chats.length})
+            {t('chat.conversations', 'CONVERSATIONS')} ({chats.length})
           </h2>
           <div className="flex items-center gap-1.5 font-mono text-[11px] text-neutral-500">
             <StatusDot status={isConnected ? 'active' : 'idle'} size="sm" />
@@ -494,7 +496,7 @@ export const LiveChatPage: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder={`${t('common.search', 'Search')} ${t('chat.conversations', 'conversations')}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-white border border-[#D9D9D9] text-xs font-mono focus:outline-none focus:border-black"
@@ -513,7 +515,7 @@ export const LiveChatPage: React.FC = () => {
           ) : filteredChats.length === 0 ? (
             <div className="p-8 text-center flex flex-col items-center justify-center">
               <Clock className="w-10 h-10 text-neutral-300 mb-2" />
-              <p className="text-xs font-mono font-bold text-neutral-700">No conversations yet</p>
+              <p className="text-xs font-mono font-bold text-neutral-700">{t('chat.noConversations', 'No conversations yet')}</p>
               <p className="text-[11px] text-neutral-400 mt-1 max-w-[200px] leading-relaxed">
                 {user?.role === 'CUSTOMER'
                   ? 'Browse verified artisans or check quotations on your deals to start a chat.'
@@ -521,11 +523,11 @@ export const LiveChatPage: React.FC = () => {
               </p>
               {user?.role === 'CUSTOMER' ? (
                 <Link to="/customer/workers" className="mt-4">
-                  <Button variant="outline" size="sm">Browse Artisans</Button>
+                  <Button variant="outline" size="sm">{t('nav.findWorkers', 'Browse Artisans')}</Button>
                 </Link>
               ) : (
                 <Link to="/worker/feed" className="mt-4">
-                  <Button variant="outline" size="sm">Browse Feed</Button>
+                  <Button variant="outline" size="sm">{t('nav.browseDeals', 'Browse Feed')}</Button>
                 </Link>
               )}
             </div>
@@ -662,18 +664,18 @@ export const LiveChatPage: React.FC = () => {
             {isDealCompleted ? (
               <div className="px-4 py-2 bg-neutral-100 text-neutral-700 border-b border-neutral-200 text-xs font-mono flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                <span>This deal is marked completed. Conversation is archived and read-only.</span>
+                <span>{t('chat.readOnlyNotice', 'This deal is marked completed. Conversation is archived and read-only.')}</span>
               </div>
             ) : isDealAccepted ? (
               <div className="px-4 py-2 bg-emerald-50 text-emerald-900 border-b border-emerald-200 text-xs font-mono flex items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Escrow Protected: Deal confirmed. Direct contact and site addresses are unlocked.</span>
+                <span>{t('chat.unmaskedNotice', 'Escrow Protected: Deal confirmed. Direct contact and site addresses are unlocked.')}</span>
               </div>
             ) : (
               <div className="px-4 py-2 bg-amber-50 text-amber-900 border-b border-amber-200 text-xs font-mono flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5 text-[#FF5A1F] shrink-0" />
                 <span>
-                  Escrow Protection Active: Phone numbers, emails, and links are hidden until the quotation is accepted into platform escrow.
+                  {t('chat.maskedNotice', 'Escrow Protection Active: Phone numbers, emails, and links are hidden until quotation is accepted into platform escrow.')}
                 </span>
               </div>
             )}
@@ -847,8 +849,8 @@ export const LiveChatPage: React.FC = () => {
                 disabled={isDealCompleted}
                 placeholder={
                   isDealCompleted
-                    ? 'Project completed. Chat is read-only.'
-                    : 'Type a message in English, Hindi, or Malayalam (Enter to send)...'
+                    ? t('chat.readOnlyNotice', 'Project completed. Chat is read-only.')
+                    : `${t('chat.typeMessage', 'Type a message...')} (Enter to send)`
                 }
                 className="flex-1 bg-white border border-[#D9D9D9] px-4 py-2.5 text-xs font-mono focus:outline-none focus:border-black disabled:bg-neutral-100 disabled:text-neutral-400"
               />
@@ -860,7 +862,7 @@ export const LiveChatPage: React.FC = () => {
                 disabled={(!inputText.trim() && !attachedFile) || isDealCompleted}
                 icon={<Send className="w-3.5 h-3.5" />}
               >
-                Send
+                {t('chat.send', 'Send')}
               </Button>
             </form>
           </>

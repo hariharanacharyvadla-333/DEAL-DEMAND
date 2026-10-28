@@ -16,8 +16,10 @@ import {
   MapPin,
   ArrowLeft,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export const SubmitQuotationPage: React.FC = () => {
+  const toast = useToast();
   const { id: dealId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -106,12 +108,13 @@ export const SubmitQuotationPage: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
+        toast.success('Quotation submitted successfully to client!');
         navigate('/worker/quotes');
       } else {
-        alert(data.message || 'Failed to submit quotation.');
+        toast.error(data.message || 'Failed to submit quotation.');
       }
     } catch (err) {
-      alert('Error submitting quotation.');
+      toast.error('Error submitting quotation.');
     } finally {
       setIsSubmitting(false);
     }
